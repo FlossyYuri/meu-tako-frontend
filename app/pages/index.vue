@@ -1,9 +1,7 @@
 <template>
   <div class="space-y-6">
     <!-- Welcome Section -->
-    <div
-      class="bg-gradient-to-r from-primary-600 to-primary-700 rounded-lg p-6 text-white"
-    >
+    <div class="bg-gradient-to-r from-primary-600 to-primary-700 rounded-lg p-6 text-white">
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-2xl font-bold">
@@ -96,10 +94,7 @@
               <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
                 Transações Recentes
               </h2>
-              <NuxtLink
-                to="/transactions"
-                class="text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400"
-              >
+              <NuxtLink to="/transactions" class="text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400">
                 Ver todas
               </NuxtLink>
             </div>
@@ -109,14 +104,8 @@
             <LoadingSpinner text="Carregando transações..." />
           </div>
 
-          <div
-            v-else-if="transactionsStore.recentTransactions.length === 0"
-            class="p-6 text-center"
-          >
-            <Icon
-              name="lucide:credit-card"
-              class="w-12 h-12 text-gray-400 mx-auto mb-4"
-            />
+          <div v-else-if="transactionsStore.recentTransactions.length === 0" class="p-6 text-center">
+            <Icon name="lucide:credit-card" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p class="text-gray-500 dark:text-gray-400">
               Nenhuma transação encontrada
             </p>
@@ -126,46 +115,14 @@
           </div>
 
           <div v-else class="divide-y divide-gray-200 dark:divide-gray-700">
-            <div
-              v-for="transaction in transactionsStore.recentTransactions.slice(0, 5)"
-              :key="transaction.transaction_id"
-              class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
-            >
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                  <div
-                    class="p-2 rounded-lg"
-                    :class="getTransactionIconClass(transaction.type)"
-                  >
-                    <Icon
-                      :name="getTransactionIcon(transaction.type)"
-                      class="w-5 h-5"
-                    />
-                  </div>
-                  <div>
-                    <p class="font-medium text-gray-900 dark:text-white">
-                      {{ transaction.description || 'Transação' }}
-                    </p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                      {{ formatDisplayDate(transaction.date) }}
-                    </p>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <p
-                    class="font-semibold"
-                    :class="getTransactionAmountClass(transaction.type)"
-                  >
-                    {{ getTransactionAmountPrefix(transaction.type)
-
-                    }}{{ formatCurrency(transaction.amount) }}
-                  </p>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
-                    {{ transaction.category?.name || 'Sem categoria' }}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <TransactionItem
+              v-for="tx in transactionsStore.recentTransactions.slice(0, 5)"
+              :key="tx.transaction_id"
+              :transaction="tx"
+              :show-category="!!tx.category"
+              variant="list"
+              compact
+            />
           </div>
         </Card>
       </div>
@@ -181,39 +138,19 @@
           </template>
 
           <div class="space-y-3">
-            <Button
-              to="/transactions/new?type=income"
-              variant="success"
-              full-width
-              icon="lucide:plus"
-            >
+            <Button to="/transactions/new?type=income" variant="success" full-width icon="lucide:plus">
               Adicionar Receita
             </Button>
 
-            <Button
-              to="/transactions/new?type=expense"
-              variant="error"
-              full-width
-              icon="lucide:minus"
-            >
+            <Button to="/transactions/new?type=expense" variant="error" full-width icon="lucide:minus">
               Adicionar Despesa
             </Button>
 
-            <Button
-              to="/transactions/transfer"
-              variant="outline"
-              full-width
-              icon="lucide:arrow-right-left"
-            >
+            <Button to="/transactions/transfer" variant="outline" full-width icon="lucide:arrow-right-left">
               Transferir
             </Button>
 
-            <Button
-              to="/goals/new"
-              variant="outline"
-              full-width
-              icon="lucide:target"
-            >
+            <Button to="/goals/new" variant="outline" full-width icon="lucide:target">
               Nova Meta
             </Button>
           </div>
@@ -226,10 +163,7 @@
               <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
                 Carteiras
               </h2>
-              <NuxtLink
-                to="/wallets"
-                class="text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400"
-              >
+              <NuxtLink to="/wallets" class="text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400">
                 Gerenciar
               </NuxtLink>
             </div>
@@ -239,14 +173,8 @@
             <LoadingSpinner size="sm" />
           </div>
 
-          <div
-            v-else-if="walletsStore.wallets.length === 0"
-            class="p-4 text-center"
-          >
-            <Icon
-              name="lucide:wallet"
-              class="w-8 h-8 text-gray-400 mx-auto mb-2"
-            />
+          <div v-else-if="walletsStore.wallets.length === 0" class="p-4 text-center">
+            <Icon name="lucide:wallet" class="w-8 h-8 text-gray-400 mx-auto mb-2" />
             <p class="text-sm text-gray-500 dark:text-gray-400">
               Nenhuma carteira
             </p>
@@ -295,59 +223,6 @@ const { formatCurrency, formatDisplayDate } = useApi()
 
 // State
 const activeGoalsCount = ref(0)
-
-// Methods
-const getTransactionIcon = (type: string) => {
-  switch (type) {
-    case 'income':
-      return 'lucide:arrow-up'
-    case 'expense':
-      return 'lucide:arrow-down'
-    case 'transfer':
-      return 'lucide:arrow-right-left'
-    default:
-      return 'lucide:credit-card'
-  }
-}
-
-const getTransactionIconClass = (type: string) => {
-  switch (type) {
-    case 'income':
-      return 'bg-success-100 text-success-600'
-    case 'expense':
-      return 'bg-error-100 text-error-600'
-    case 'transfer':
-      return 'bg-primary-100 text-primary-600'
-    default:
-      return 'bg-gray-100 text-gray-600'
-  }
-}
-
-const getTransactionAmountClass = (type: string) => {
-  switch (type) {
-    case 'income':
-      return 'text-success-600'
-    case 'expense':
-      return 'text-error-600'
-    case 'transfer':
-      return 'text-primary-600'
-    default:
-      return 'text-gray-900 dark:text-white'
-  }
-}
-
-const getTransactionAmountPrefix = (type: string) => {
-  switch (type) {
-    case 'income':
-      return '+'
-    case 'expense':
-      return '-'
-    case 'transfer':
-      return ''
-    default:
-      return ''
-  }
-}
 
 // Load data on mount
 onMounted(async () => {

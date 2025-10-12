@@ -1,19 +1,13 @@
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-          Metas Financeiras
-        </h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-1">
-          Defina e acompanhe suas metas financeiras
-        </p>
-      </div>
-      <Button to="/goals/new" variant="primary" icon="lucide:plus">
-        Nova Meta
-      </Button>
-    </div>
+    <PageHeader title="Metas Financeiras" subtitle="Defina e acompanhe suas metas financeiras">
+      <template #actions>
+        <Button to="/goals/new" variant="primary" icon="lucide:plus">
+          Nova Meta
+        </Button>
+      </template>
+    </PageHeader>
 
     <!-- Loading -->
     <div v-if="goalsStore.isLoading" class="py-12">
@@ -21,10 +15,7 @@
     </div>
 
     <!-- Goals Grid -->
-    <div
-      v-else-if="goalsStore.goals.length > 0"
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-    >
+    <div v-else-if="goalsStore.goals.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <Card
         v-for="goal in goalsStore.goals"
         :key="goal.goal_id"
@@ -37,8 +28,7 @@
                 {{ goal.title }}
               </h3>
               <p class="text-sm text-gray-500 dark:text-gray-400">
-                {{ formatDisplayDate(goal.start_date) }} -
-                {{ formatDisplayDate(goal.end_date) }}
+                {{ formatDisplayDate(goal.start_date) }} - {{ formatDisplayDate(goal.end_date) }}
               </p>
             </div>
             <Badge :variant="goal.is_active ? 'success' : 'default'" size="sm">
@@ -77,9 +67,7 @@
                   {{ formatCurrency(goal.target_amount) }}
                 </span>
               </div>
-              <div
-                class="flex justify-between border-t border-gray-200 dark:border-gray-700 pt-2"
-              >
+              <div class="flex justify-between border-t border-gray-200 dark:border-gray-700 pt-2">
                 <span class="text-sm text-gray-600 dark:text-gray-400">Restante</span>
                 <span class="font-semibold text-primary-600">
                   {{ formatCurrency(goal.target_amount - goal.current_amount) }}

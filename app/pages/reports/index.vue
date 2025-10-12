@@ -1,16 +1,7 @@
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-          Relatórios
-        </h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-1">
-          Análise detalhada das suas finanças
-        </p>
-      </div>
-    </div>
+    <PageHeader title="Relatórios" subtitle="Análise detalhada das suas finanças" />
 
     <!-- Period Selector -->
     <Card>
@@ -41,9 +32,7 @@
             <Icon name="lucide:arrow-up" class="w-6 h-6 text-success-600" />
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Receitas
-            </p>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Receitas</p>
             <p class="text-2xl font-bold text-gray-900 dark:text-white">
               {{ formatCurrency(reportData.totalIncome) }}
             </p>
@@ -57,9 +46,7 @@
             <Icon name="lucide:arrow-down" class="w-6 h-6 text-error-600" />
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Despesas
-            </p>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Despesas</p>
             <p class="text-2xl font-bold text-gray-900 dark:text-white">
               {{ formatCurrency(reportData.totalExpense) }}
             </p>
@@ -73,9 +60,7 @@
             <Icon name="lucide:wallet" class="w-6 h-6 text-primary-600" />
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Saldo
-            </p>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Saldo</p>
             <p class="text-2xl font-bold text-gray-900 dark:text-white">
               {{ formatCurrency(reportData.balance) }}
             </p>
@@ -89,9 +74,7 @@
             <Icon name="lucide:trending-up" class="w-6 h-6 text-yellow-600" />
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Economia
-            </p>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Economia</p>
             <p class="text-2xl font-bold text-gray-900 dark:text-white">
               {{ formatCurrency(reportData.savings) }}
             </p>
@@ -117,10 +100,7 @@
             class="flex items-center justify-between"
           >
             <div class="flex items-center space-x-3">
-              <div
-                class="w-4 h-4 rounded-full"
-                :style="{ backgroundColor: category.color }"
-              />
+              <div class="w-4 h-4 rounded-full" :style="{ backgroundColor: category.color }" />
               <span class="text-sm font-medium text-gray-900 dark:text-white">
                 {{ category.name }}
               </span>
@@ -152,10 +132,7 @@
             class="flex items-center justify-between"
           >
             <div class="flex items-center space-x-3">
-              <div
-                class="w-4 h-4 rounded-full"
-                :style="{ backgroundColor: category.color }"
-              />
+              <div class="w-4 h-4 rounded-full" :style="{ backgroundColor: category.color }" />
               <span class="text-sm font-medium text-gray-900 dark:text-white">
                 {{ category.name }}
               </span>
@@ -183,10 +160,7 @@
 
       <div class="p-6">
         <div class="text-center">
-          <Icon
-            name="lucide:bar-chart-3"
-            class="w-16 h-16 text-gray-400 mx-auto mb-4"
-          />
+          <Icon name="lucide:bar-chart-3" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
             Gráfico em desenvolvimento
           </h3>
@@ -239,7 +213,6 @@ const reportData = ref({
 
 // Watch for period changes
 watch(selectedPeriod, (newPeriod) => {
-  // In a real app, this would fetch new data based on the selected period
   console.log('Period changed to:', newPeriod)
 })
 </script>
