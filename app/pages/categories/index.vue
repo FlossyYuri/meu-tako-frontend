@@ -10,26 +10,29 @@
       </template>
     </PageHeader>
 
-    <!-- Abas e busca -->
+    <!-- Toggle centralizado entre headline e filtros -->
+    <div class="flex justify-center">
+      <div class="inline-flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
+        <button
+          class="px-3 py-2 rounded-md text-sm font-medium transition-colors"
+          :class="tab === 'income' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow' : 'text-gray-600 dark:text-gray-300'"
+          @click="tab = 'income'"
+        >
+          Receitas
+        </button>
+        <button
+          class="px-3 py-2 rounded-md text-sm font-medium transition-colors"
+          :class="tab === 'expense' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow' : 'text-gray-600 dark:text-gray-300'"
+          @click="tab = 'expense'"
+        >
+          Despesas
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtros -->
     <Card>
       <div class="p-4 flex flex-col md:flex-row md:items-center gap-4">
-        <div class="inline-flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
-          <button
-            class="px-3 py-2 rounded-md text-sm font-medium transition-colors"
-            :class="tab === 'income' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow' : 'text-gray-600 dark:text-gray-300'"
-            @click="tab = 'income'"
-          >
-            Receitas
-          </button>
-          <button
-            class="px-3 py-2 rounded-md text-sm font-medium transition-colors"
-            :class="tab === 'expense' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow' : 'text-gray-600 dark:text-gray-300'"
-            @click="tab = 'expense'"
-          >
-            Despesas
-          </button>
-        </div>
-
         <div class="flex-1">
           <Input v-model="search" type="search" placeholder="Buscar por nome/descrição..." icon="lucide:search" />
         </div>
