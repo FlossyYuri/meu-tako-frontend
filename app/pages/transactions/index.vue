@@ -58,6 +58,9 @@
 </template>
 
 <script setup lang="ts">
+import TransactionFilters from '~/components/feature/TransactionFilters.vue'
+import TransactionList from '~/components/feature/TransactionList.vue'
+
 definePageMeta({
   middleware: 'auth'
 })
