@@ -9,6 +9,24 @@ import type {
   TransactionFilter,
 } from '~/types';
 
+type AnyListResponse<T> =
+  | T[]
+  | {
+      data?: T[];
+      items?: T[];
+      transactions?: T[];
+      pagination?: {
+        page?: number;
+        limit?: number;
+        total?: number;
+        totalPages?: number;
+      };
+      page?: number;
+      limit?: number;
+      total?: number;
+      totalPages?: number;
+    };
+
 export const useTransactionsStore = defineStore('transactions', () => {
   // State
   const transactions = ref<Transaction[]>([]);
@@ -18,12 +36,28 @@ export const useTransactionsStore = defineStore('transactions', () => {
   const error = ref<string | null>(null);
   const filters = ref<TransactionFilter>({});
 
+  // (Opcional) metadados de paginação vindos da API
+  const page = ref(1);
+  const limit = ref(10);
+  const total = ref(0);
+  const totalPages = ref(1);
+
+  // Helpers
+  const extractList = <T>(res: AnyListResponse<T>): { list: T[]; meta?: { page?: number; limit?: number; total?: number; totalPages?: number } } => {
+    if (Array.isArray(res)) return { list: res };
+    const list = res.data || res.items || res.transactions || [];
+    const meta = {
+      page: res.pagination?.page ?? res.page,
+      limit: res.pagination?.limit ?? res.limit,
+      total: res.pagination?.total ?? res.total,
+      totalPages: res.pagination?.totalPages ?? res.totalPages,
+    };
+    return { list, meta };
+  };
+
   // Getters
   const recentTransactions = computed(() => {
-    if (!transactions.value || transactions.value.length === 0) {
-      return [];
-    }
-
+    if (!transactions.value || transactions.value.length === 0) return [];
     return transactions.value
       .filter((transaction) => transaction.date)
       .sort((a, b) => {
@@ -125,26 +159,34 @@ export const useTransactionsStore = defineStore('transactions', () => {
   });
 
   // Actions
-  const fetchTransactions = async (walletId?: string, page?: number, limit?: number) => {
+  const fetchTransactions = async (walletId?: string, pageArg?: number, limitArg?: number) => {
     try {
       isLoading.value = true;
       error.value = null;
 
-      const params: Record<string, string | number> = {};
-      if (walletId) params.wallet_id = walletId;
-      if (page) params.page = page;
-      if (limit) params.limit = limit;
-
-      const response = await $fetch<Transaction[]>('/transactions', {
-        params,
+      const response = await $fetch<AnyListResponse<Transaction>>('/transactions', {
+        query: {
+          ...(walletId ? { wallet_id: walletId } : {}),
+          ...(pageArg ? { page: pageArg } : {}),
+          ...(limitArg ? { limit: limitArg } : {}),
+        },
         headers: {
           Authorization: `Bearer ${useAuthStore().token}`,
         },
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      transactions.value = response;
-      return response;
+      const { list, meta } = extractList<Transaction>(response);
+      transactions.value = list;
+
+      if (meta) {
+        page.value = meta.page ?? page.value;
+        limit.value = meta.limit ?? limit.value;
+        total.value = meta.total ?? total.value;
+        totalPages.value = meta.totalPages ?? totalPages.value;
+      }
+
+      return list;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao carregar transações';
       throw err;
@@ -179,18 +221,17 @@ export const useTransactionsStore = defineStore('transactions', () => {
     }
   };
 
-  const fetchIncomes = async (walletId?: string, page?: number, limit?: number) => {
+  const fetchIncomes = async (walletId?: string, pageArg?: number, limitArg?: number) => {
     try {
       isLoading.value = true;
       error.value = null;
 
-      const params: Record<string, string | number> = {};
-      if (walletId) params.wallet_id = walletId;
-      if (page) params.page = page;
-      if (limit) params.limit = limit;
-
       const response = await $fetch<Income[]>('/incomes', {
-        params,
+        query: {
+          ...(walletId ? { wallet_id: walletId } : {}),
+          ...(pageArg ? { page: pageArg } : {}),
+          ...(limitArg ? { limit: limitArg } : {}),
+        },
         headers: {
           Authorization: `Bearer ${useAuthStore().token}`,
         },
@@ -232,18 +273,17 @@ export const useTransactionsStore = defineStore('transactions', () => {
     }
   };
 
-  const fetchExpenses = async (walletId?: string, page?: number, limit?: number) => {
+  const fetchExpenses = async (walletId?: string, pageArg?: number, limitArg?: number) => {
     try {
       isLoading.value = true;
       error.value = null;
 
-      const params: Record<string, string | number> = {};
-      if (walletId) params.wallet_id = walletId;
-      if (page) params.page = page;
-      if (limit) params.limit = limit;
-
       const response = await $fetch<Expense[]>('/expenses', {
-        params,
+        query: {
+          ...(walletId ? { wallet_id: walletId } : {}),
+          ...(pageArg ? { page: pageArg } : {}),
+          ...(limitArg ? { limit: limitArg } : {}),
+        },
         headers: {
           Authorization: `Bearer ${useAuthStore().token}`,
         },
@@ -600,6 +640,10 @@ export const useTransactionsStore = defineStore('transactions', () => {
     isLoading,
     error,
     filters,
+    page,
+    limit,
+    total,
+    totalPages,
 
     // Getters
     recentTransactions,
