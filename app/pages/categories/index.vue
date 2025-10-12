@@ -124,8 +124,13 @@
             </div>
 
             <div class="flex items-center gap-2">
-              <Button size="sm" variant="outline" icon="lucide:toggle-left" @click="onToggleActive(c.category_id)">
-                Alternar
+              <Button
+                size="sm"
+                variant="outline"
+                :icon="c.is_active ? 'lucide:toggle-right' : 'lucide:toggle-left'"
+                @click="onToggleActive(c.category_id)"
+              >
+                {{ c.is_active ? 'Desativar' : 'Ativar' }}
               </Button>
               <Button size="sm" variant="outline" icon="lucide:shield" @click="openLimit(c.category_id)">
                 {{ categoryHasLimit(c.category_id) ? 'Editar limite' : 'Definir limite' }}
@@ -266,7 +271,6 @@ const openLimit = (expenseCategoryId: string) => {
 }
 
 const onCategorySaved = async () => {
-  // Recarregar lista atual
   if (modalType.value === 'income') await loadIncomes()
   else await loadExpenses()
 }

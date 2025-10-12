@@ -10,13 +10,20 @@ const normalizeCategory = (raw: AnyCategory): Category => {
     raw.income_category_id ||
     '';
 
+  const isActive =
+    typeof raw.is_active === 'boolean'
+      ? raw.is_active
+      : typeof raw.active === 'boolean'
+        ? raw.active
+        : true;
+
   return {
     category_id: String(id),
     name: raw.name ?? '',
     description: raw.description ?? undefined,
     color: raw.color ?? undefined,
     icon: raw.icon ?? undefined,
-    is_active: typeof raw.is_active === 'boolean' ? raw.is_active : true,
+    is_active: isActive,
     created_at: raw.created_at ?? raw.createdAt ?? '',
     updated_at: raw.updated_at ?? raw.updatedAt ?? '',
   };

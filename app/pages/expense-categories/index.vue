@@ -39,7 +39,14 @@
             <Badge :variant="c.is_active ? 'success' : 'warning'" size="sm">
               {{ c.is_active ? 'Ativa' : 'Inativa' }}
             </Badge>
-            <Button size="sm" variant="outline" icon="lucide:toggle-left" @click="onToggle(c.category_id)">Alternar</Button>
+            <Button
+              size="sm"
+              variant="outline"
+              :icon="c.is_active ? 'lucide:toggle-right' : 'lucide:toggle-left'"
+              @click="onToggle(c.category_id)"
+            >
+              {{ c.is_active ? 'Desativar' : 'Ativar' }}
+            </Button>
             <Button size="sm" variant="outline" icon="lucide:edit" @click="openEdit(c)">Editar</Button>
             <Button size="sm" variant="error" icon="lucide:trash-2" @click="onDelete(c.category_id)">Excluir</Button>
           </div>
@@ -86,7 +93,6 @@ const errors = reactive({
 })
 
 const displayedCategories = computed(() => {
-  // quando showInactive = false, mostramos somente ativas
   const base = categoriesStore.expenseCategories
   return showInactive.value ? base : base.filter(c => c.is_active)
 })
