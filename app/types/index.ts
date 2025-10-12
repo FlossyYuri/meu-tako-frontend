@@ -63,6 +63,8 @@ export interface Category {
   description?: string;
   color?: string; // opcional no retorno
   icon?: string;  // opcional no retorno
+  // A API usa 'active'; mantemos compat e também retemos 'is_active' para retrocompatibilidade interna
+  active?: boolean;
   is_active: boolean;
   created_at: string;
   updated_at: string;

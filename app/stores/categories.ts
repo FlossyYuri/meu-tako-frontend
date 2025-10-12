@@ -23,6 +23,8 @@ const normalizeCategory = (raw: AnyCategory): Category => {
     description: raw.description ?? undefined,
     color: raw.color ?? undefined,
     icon: raw.icon ?? undefined,
+    // manter ambas para compat
+    active: isActive,
     is_active: isActive,
     created_at: raw.created_at ?? raw.createdAt ?? '',
     updated_at: raw.updated_at ?? raw.updatedAt ?? '',

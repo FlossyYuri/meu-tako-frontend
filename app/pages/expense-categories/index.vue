@@ -36,16 +36,16 @@
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <Badge :variant="c.is_active ? 'success' : 'warning'" size="sm">
-              {{ c.is_active ? 'Ativa' : 'Inativa' }}
+            <Badge :variant="c.active ? 'success' : 'warning'" size="sm">
+              {{ c.active ? 'Ativa' : 'Inativa' }}
             </Badge>
             <Button
               size="sm"
               variant="outline"
-              :icon="c.is_active ? 'lucide:toggle-right' : 'lucide:toggle-left'"
+              :icon="c.active ? 'lucide:toggle-right' : 'lucide:toggle-left'"
               @click="onToggle(c.category_id)"
             >
-              {{ c.is_active ? 'Desativar' : 'Ativar' }}
+              {{ c.active ? 'Desativar' : 'Ativar' }}
             </Button>
             <Button size="sm" variant="outline" icon="lucide:edit" @click="openEdit(c)">Editar</Button>
             <Button size="sm" variant="error" icon="lucide:trash-2" @click="onDelete(c.category_id)">Excluir</Button>
@@ -94,7 +94,7 @@ const errors = reactive({
 
 const displayedCategories = computed(() => {
   const base = categoriesStore.expenseCategories
-  return showInactive.value ? base : base.filter(c => c.is_active)
+  return showInactive.value ? base : base.filter(c => c.active)
 })
 
 const loadCategories = async () => {

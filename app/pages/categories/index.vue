@@ -107,8 +107,8 @@
               <div>
                 <div class="flex items-center gap-2">
                   <p class="font-medium text-gray-900 dark:text-white">{{ c.name }}</p>
-                  <Badge :variant="c.is_active ? 'success' : 'warning'" size="sm">
-                    {{ c.is_active ? 'Ativa' : 'Inativa' }}
+                  <Badge :variant="c.active ? 'success' : 'warning'" size="sm">
+                    {{ c.active ? 'Ativa' : 'Inativa' }}
                   </Badge>
                   <Badge v-if="categoryHasLimit(c.category_id)" variant="info" size="sm">Limite definido</Badge>
                 </div>
@@ -120,10 +120,10 @@
               <Button
                 size="sm"
                 variant="outline"
-                :icon="c.is_active ? 'lucide:toggle-right' : 'lucide:toggle-left'"
+                :icon="c.active ? 'lucide:toggle-right' : 'lucide:toggle-left'"
                 @click="onToggleActive(c.category_id)"
               >
-                {{ c.is_active ? 'Desativar' : 'Ativar' }}
+                {{ c.active ? 'Desativar' : 'Ativar' }}
               </Button>
               <Button size="sm" variant="outline" icon="lucide:shield" @click="openLimit(c.category_id)">
                 {{ categoryHasLimit(c.category_id) ? 'Editar limite' : 'Definir limite' }}
