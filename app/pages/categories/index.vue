@@ -33,16 +33,6 @@
         <div class="flex-1">
           <Input v-model="search" type="search" placeholder="Buscar por nome/descrição..." icon="lucide:search" />
         </div>
-
-        <div v-if="tab === 'expense'" class="flex items-center gap-2">
-          <label class="text-sm text-gray-600 dark:text-gray-400">Mostrar apenas ativas</label>
-          <input
-            v-model="onlyActiveExpense"
-            type="checkbox"
-            class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-            @change="loadExpenses"
-          />
-        </div>
       </div>
     </Card>
 
@@ -174,7 +164,6 @@ const { success, error: showError } = useNotifications()
 // Estado
 const tab = ref<'income' | 'expense'>('income')
 const search = ref('')
-const onlyActiveExpense = ref(true)
 const isLoadingAll = ref(true)
 
 const showCategoryModal = ref(false)
@@ -195,7 +184,6 @@ const filteredIncome = computed(() => {
 const filteredExpense = computed(() => {
   const q = search.value.trim().toLowerCase()
   return categoriesStore.expenseCategories
-    .filter(c => (onlyActiveExpense.value ? c.is_active : true))
     .filter(c => c.name.toLowerCase().includes(q) || (c.description || '').toLowerCase().includes(q))
     .sort((a, b) => a.name.localeCompare(b.name))
 })
@@ -209,7 +197,8 @@ const loadIncomes = async () => {
 }
 
 const loadExpenses = async () => {
-  await categoriesStore.fetchExpenseCategories(onlyActiveExpense.value)
+  // Buscar todas as categorias (sem filtrar apenas ativas)
+  await categoriesStore.fetchExpenseCategories(false)
 }
 
 const loadInitial = async () => {
