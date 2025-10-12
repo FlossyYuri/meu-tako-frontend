@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center justify-between">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
     <div>
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
         {{ title }}
@@ -8,7 +8,10 @@
         {{ subtitle }}
       </p>
     </div>
-    <div v-if="$slots.actions" class="flex items-center gap-3">
+    <div
+      v-if="$slots.actions"
+      class="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto justify-start sm:justify-end"
+    >
       <slot name="actions" />
     </div>
   </div>
