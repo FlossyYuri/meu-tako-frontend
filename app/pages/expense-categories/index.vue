@@ -52,8 +52,6 @@
       <form class="space-y-4" @submit.prevent="onSubmit">
         <Input v-model="form.name" label="Nome" required :error="errors.name" />
         <Input v-model="form.description" label="Descrição" />
-        <Input v-model="form.color" label="Cor (hex)" placeholder="#FF5733" />
-        <Input v-model="form.icon" label="Ícone (emoji ou nome)" placeholder="🍔" />
         <div class="flex justify-end gap-2 mt-2">
           <Button type="button" variant="outline" @click="isOpen = false">Cancelar</Button>
           <Button type="submit" variant="primary" :loading="categoriesStore.isLoading" :disabled="!form.name">
@@ -80,9 +78,7 @@ const editingId = ref<string | null>(null)
 
 const form = reactive({
   name: '',
-  description: '',
-  color: '',
-  icon: ''
+  description: ''
 })
 
 const errors = reactive({
@@ -102,8 +98,6 @@ const openCreate = () => {
   editingId.value = null
   form.name = ''
   form.description = ''
-  form.color = ''
-  form.icon = ''
   isOpen.value = true
 }
 
@@ -112,8 +106,6 @@ const openEdit = (c: import('~/types').Category) => {
   editingId.value = c.category_id
   form.name = c.name
   form.description = c.description || ''
-  form.color = c.color || ''
-  form.icon = c.icon || ''
   isOpen.value = true
 }
 
@@ -122,17 +114,13 @@ const onSubmit = async () => {
     if (isEditing.value && editingId.value) {
       await categoriesStore.updateExpenseCategory(editingId.value, {
         name: form.name || undefined,
-        description: form.description || undefined,
-        color: form.color || undefined,
-        icon: form.icon || undefined
+        description: form.description || undefined
       })
       success('Categoria atualizada')
     } else {
       await categoriesStore.createExpenseCategory({
         name: form.name,
-        description: form.description || undefined,
-        color: form.color || undefined,
-        icon: form.icon || undefined
+        description: form.description || undefined
       })
       success('Categoria criada')
     }

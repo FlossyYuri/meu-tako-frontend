@@ -61,8 +61,8 @@ export interface Category {
   category_id: string;
   name: string;
   description?: string;
-  color: string;
-  icon: string;
+  color?: string; // opcional no retorno
+  icon?: string;  // opcional no retorno
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -71,15 +71,11 @@ export interface Category {
 export interface CreateCategoryRequest {
   name: string;
   description?: string;
-  color?: string;
-  icon?: string;
 }
 
 export interface UpdateCategoryRequest {
   name?: string;
   description?: string;
-  color?: string;
-  icon?: string;
 }
 
 // Transaction types

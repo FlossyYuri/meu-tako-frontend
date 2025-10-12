@@ -6,25 +6,14 @@
     @update:isOpen="emit('update:isOpen', $event)"
   >
     <form class="space-y-4" @submit.prevent="onSubmit">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
         <Input
           v-model="form.name"
           label="Nome"
           required
           :error="errors.name"
         />
-        <Input
-          v-model="form.color"
-          label="Cor (hex)"
-          placeholder="#3B82F6"
-        />
       </div>
-
-      <Input
-        v-model="form.icon"
-        label="Ícone (emoji ou nome)"
-        placeholder="💰 ou lucide:wallet"
-      />
 
       <Input
         v-model="form.description"
@@ -68,9 +57,7 @@ const { success, error: showError } = useNotifications()
 
 const form = reactive({
   name: props.category?.name || '',
-  description: props.category?.description || '',
-  color: props.category?.color || '',
-  icon: props.category?.icon || ''
+  description: props.category?.description || ''
 })
 
 const errors = reactive({
@@ -86,8 +73,6 @@ const modalTitle = computed(() => {
 watch(() => props.category, (c) => {
   form.name = c?.name || ''
   form.description = c?.description || ''
-  form.color = c?.color || ''
-  form.icon = c?.icon || ''
 })
 
 const onSubmit = async () => {
@@ -104,32 +89,24 @@ const onSubmit = async () => {
       if (props.category) {
         saved = await categoriesStore.updateIncomeCategory(props.category.category_id, {
           name: form.name || undefined,
-          description: form.description || undefined,
-          color: form.color || undefined,
-          icon: form.icon || undefined
+          description: form.description || undefined
         })
       } else {
         saved = await categoriesStore.createIncomeCategory({
           name: form.name,
-          description: form.description || undefined,
-          color: form.color || undefined,
-          icon: form.icon || undefined
+          description: form.description || undefined
         })
       }
     } else {
       if (props.category) {
         saved = await categoriesStore.updateExpenseCategory(props.category.category_id, {
           name: form.name || undefined,
-          description: form.description || undefined,
-          color: form.color || undefined,
-          icon: form.icon || undefined
+          description: form.description || undefined
         })
       } else {
         saved = await categoriesStore.createExpenseCategory({
           name: form.name,
-          description: form.description || undefined,
-          color: form.color || undefined,
-          icon: form.icon || undefined
+          description: form.description || undefined
         })
       }
     }
