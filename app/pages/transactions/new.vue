@@ -88,35 +88,6 @@
           />
         </div>
 
-        <!-- Wallet -->
-        <div>
-          <label
-            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-          >
-            Carteira
-          </label>
-          <select
-            v-model="form.wallet_id"
-            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            :class="{ 'border-error-300': errors.wallet_id }"
-          >
-            <option value="">Selecione uma carteira</option>
-            <option
-              v-for="wallet in walletsStore.wallets"
-              :key="wallet.wallet_id"
-              :value="wallet.wallet_id"
-            >
-              {{ wallet.wallet_name }} ({{ formatCurrency(wallet.balance) }})
-            </option>
-          </select>
-          <p
-            v-if="errors.wallet_id"
-            class="text-sm text-error-600 dark:text-error-400 mt-1"
-          >
-            {{ errors.wallet_id }}
-          </p>
-        </div>
-
         <!-- Category -->
         <div>
           <label
@@ -216,10 +187,8 @@ definePageMeta({
 })
 
 const route = useRoute()
-const walletsStore = useWalletsStore()
 const transactionsStore = useTransactionsStore()
 const categoriesStore = useCategoriesStore()
-const { formatCurrency } = useApi()
 const { success, error: showError } = useNotifications()
 
 // State
@@ -228,7 +197,6 @@ const form = reactive({
   amount: '',
   description: '',
   date: new Date().toISOString().split('T')[0],
-  wallet_id: '',
   category_id: '',
   status: false
 })
@@ -237,7 +205,6 @@ const errors = reactive({
   amount: '',
   description: '',
   date: '',
-  wallet_id: '',
   category_id: ''
 })
 
@@ -257,12 +224,10 @@ const isFormValid = computed(() => {
     form.amount &&
     form.description &&
     form.date &&
-    form.wallet_id &&
     form.category_id &&
     !errors.amount &&
     !errors.description &&
     !errors.date &&
-    !errors.wallet_id &&
     !errors.category_id
   )
 })
@@ -293,11 +258,6 @@ const validateForm = () => {
     isValid = false
   }
 
-  if (!form.wallet_id) {
-    errors.wallet_id = 'Carteira é obrigatória'
-    isValid = false
-  }
-
   if (!form.category_id) {
     errors.category_id = 'Categoria é obrigatória'
     isValid = false
@@ -314,7 +274,6 @@ const handleSubmit = async () => {
 
     if (isIncome.value) {
       await transactionsStore.createIncome({
-        wallet_id: form.wallet_id,
         income_category_id: form.category_id,
         amount: parseFloat(form.amount),
         description: form.description.trim(),
@@ -324,7 +283,6 @@ const handleSubmit = async () => {
       success('Receita adicionada com sucesso!')
     } else {
       await transactionsStore.createExpense({
-        wallet_id: form.wallet_id,
         expense_category_id: form.category_id,
         amount: parseFloat(form.amount),
         description: form.description.trim(),
@@ -345,11 +303,8 @@ const openNewCategory = () => {
 }
 
 const onCategoryCreated = async (created: import('~/types').Category) => {
-  // Garantir listas atualizadas
   if (isIncome.value) await categoriesStore.fetchIncomeCategories()
   else await categoriesStore.fetchExpenseCategories(true)
-
-  // Selecionar automaticamente a nova categoria
   form.category_id = created.category_id
 }
 
@@ -362,18 +317,9 @@ onMounted(async () => {
 
   try {
     await Promise.all([
-      walletsStore.fetchWallets(),
       categoriesStore.fetchIncomeCategories(),
       categoriesStore.fetchExpenseCategories(true)
     ])
-
-    // Set default wallet if available
-    if (walletsStore.wallets.length > 0 && !form.wallet_id) {
-      const defaultWallet = walletsStore.defaultWallet
-      if (defaultWallet) {
-        form.wallet_id = defaultWallet.wallet_id
-      }
-    }
   } catch (error) {
     showError('Erro ao carregar dados iniciais')
   }
@@ -383,6 +329,5 @@ onMounted(async () => {
 watch(() => form.amount, () => { if (errors.amount) errors.amount = '' })
 watch(() => form.description, () => { if (errors.description) errors.description = '' })
 watch(() => form.date, () => { if (errors.date) errors.date = '' })
-watch(() => form.wallet_id, () => { if (errors.wallet_id) errors.wallet_id = '' })
 watch(() => form.category_id, () => { if (errors.category_id) errors.category_id = '' })
 </script>

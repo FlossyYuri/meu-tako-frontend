@@ -125,20 +125,18 @@ export interface Expense {
 }
 
 export interface CreateIncomeRequest {
-  wallet_id: string;
   income_category_id: string;
   amount: number;
-  description?: string;
   date: string;
+  description?: string;
   received?: boolean;
 }
 
 export interface CreateExpenseRequest {
-  wallet_id: string;
   expense_category_id: string;
   amount: number;
-  description?: string;
   date: string;
+  description?: string;
   paid?: boolean;
 }
 

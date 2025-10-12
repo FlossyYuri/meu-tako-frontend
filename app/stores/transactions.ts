@@ -262,7 +262,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
 
       const response = await $fetch<Income>('/incomes', {
         method: 'POST',
-        body: incomeData,
+        body: incomeData, // sem wallet_id
         headers: {
           Authorization: `Bearer ${useAuthStore().token}`,
         },
@@ -271,7 +271,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
 
       incomes.value.push(response);
 
-      // Update wallet balance (mantido conforme padrão atual)
+      // Atualização local de saldo com base na resposta
       const walletsStore = useWalletsStore();
       const wallet = walletsStore.getWalletById(response.wallet_id);
       if (wallet) {
@@ -297,7 +297,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
 
       const response = await $fetch<Expense>('/expenses', {
         method: 'POST',
-        body: expenseData,
+        body: expenseData, // sem wallet_id
         headers: {
           Authorization: `Bearer ${useAuthStore().token}`,
         },
@@ -306,7 +306,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
 
       expenses.value.push(response);
 
-      // Update wallet balance (mantido conforme padrão atual)
+      // Atualização local de saldo com base na resposta
       const walletsStore = useWalletsStore();
       const wallet = walletsStore.getWalletById(response.wallet_id);
       if (wallet) {
@@ -343,9 +343,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
       });
 
       const index = incomes.value.findIndex((i) => i.income_id === incomeId);
-      if (index !== -1) {
-        incomes.value[index] = response;
-      }
+      if (index !== -1) incomes.value[index] = response;
 
       return response;
     } catch (err: any) {
@@ -374,9 +372,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
       });
 
       const index = expenses.value.findIndex((e) => e.expense_id === expenseId);
-      if (index !== -1) {
-        expenses.value[index] = response;
-      }
+      if (index !== -1) expenses.value[index] = response;
 
       return response;
     } catch (err: any) {
@@ -404,7 +400,6 @@ export const useTransactionsStore = defineStore('transactions', () => {
 
       incomes.value = incomes.value.filter((i) => i.income_id !== incomeId);
 
-      // Ajuste de saldo local (espelhando comportamento existente)
       if (income) {
         const walletsStore = useWalletsStore();
         const wallet = walletsStore.getWalletById(income.wallet_id);
@@ -476,9 +471,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
       });
 
       const index = incomes.value.findIndex((i) => i.income_id === incomeId);
-      if (index !== -1) {
-        incomes.value[index] = response;
-      }
+      if (index !== -1) incomes.value[index] = response;
 
       return response;
     } catch (err: any) {
@@ -503,9 +496,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
       });
 
       const index = expenses.value.findIndex((e) => e.expense_id === expenseId);
-      if (index !== -1) {
-        expenses.value[index] = response;
-      }
+      if (index !== -1) expenses.value[index] = response;
 
       return response;
     } catch (err: any) {

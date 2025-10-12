@@ -27,17 +27,6 @@
         </div>
 
         <div>
-          <label class="label">Carteira</label>
-          <select v-model="form.wallet_id" class="input" :class="{ 'border-error-300': errors.wallet_id }">
-            <option value="">Selecione uma carteira</option>
-            <option v-for="w in walletsStore.wallets" :key="w.wallet_id" :value="w.wallet_id">
-              {{ w.wallet_name }} ({{ formatCurrency(w.balance) }})
-            </option>
-          </select>
-          <p v-if="errors.wallet_id" class="text-sm text-error-600 dark:text-error-400 mt-1">{{ errors.wallet_id }}</p>
-        </div>
-
-        <div>
           <label class="label">Categoria</label>
           <div class="flex gap-2">
             <select v-model="form.expense_category_id" class="input" :class="{ 'border-error-300': errors.expense_category_id }">
@@ -85,17 +74,14 @@ definePageMeta({
   middleware: 'auth'
 })
 
-const walletsStore = useWalletsStore()
 const categoriesStore = useCategoriesStore()
 const transactionsStore = useTransactionsStore()
-const { formatCurrency } = useApi()
 const { success, error: showError } = useNotifications()
 
 const form = reactive({
   amount: '',
   description: '',
   date: new Date().toISOString().split('T')[0],
-  wallet_id: '',
   expense_category_id: '',
   paid: false
 })
@@ -104,14 +90,13 @@ const errors = reactive({
   amount: '',
   description: '',
   date: '',
-  wallet_id: '',
   expense_category_id: ''
 })
 
 const showCategoryModal = ref(false)
 
 const isFormValid = computed(() => {
-  return form.amount && form.date && form.wallet_id && form.expense_category_id && !errors.amount && !errors.date && !errors.wallet_id && !errors.expense_category_id
+  return form.amount && form.date && form.expense_category_id && !errors.amount && !errors.date && !errors.expense_category_id
 })
 
 const validateForm = () => {
@@ -119,7 +104,6 @@ const validateForm = () => {
   let ok = true
   if (!form.amount || parseFloat(form.amount) <= 0) { errors.amount = 'Valor deve ser maior que zero'; ok = false }
   if (!form.date) { errors.date = 'Data é obrigatória'; ok = false }
-  if (!form.wallet_id) { errors.wallet_id = 'Carteira é obrigatória'; ok = false }
   if (!form.expense_category_id) { errors.expense_category_id = 'Categoria é obrigatória'; ok = false }
   return ok
 }
@@ -129,7 +113,6 @@ const handleSubmit = async () => {
   try {
     transactionsStore.clearError()
     await transactionsStore.createExpense({
-      wallet_id: form.wallet_id,
       expense_category_id: form.expense_category_id,
       amount: parseFloat(form.amount),
       description: form.description?.trim() || undefined,
@@ -145,10 +128,7 @@ const handleSubmit = async () => {
 
 onMounted(async () => {
   try {
-    await Promise.all([
-      walletsStore.fetchWallets(),
-      categoriesStore.fetchExpenseCategories()
-    ])
+    await categoriesStore.fetchExpenseCategories()
   } catch {}
 })
 
@@ -159,6 +139,5 @@ const onCategoryCreated = async (created: import('~/types').Category) => {
 
 watch(() => form.amount, () => { if (errors.amount) errors.amount = '' })
 watch(() => form.date, () => { if (errors.date) errors.date = '' })
-watch(() => form.wallet_id, () => { if (errors.wallet_id) errors.wallet_id = '' })
 watch(() => form.expense_category_id, () => { if (errors.expense_category_id) errors.expense_category_id = '' })
 </script>
