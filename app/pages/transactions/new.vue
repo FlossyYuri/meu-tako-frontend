@@ -124,20 +124,25 @@
           >
             Categoria
           </label>
-          <select
-            v-model="form.category_id"
-            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            :class="{ 'border-error-300': errors.category_id }"
-          >
-            <option value="">Selecione uma categoria</option>
-            <option
-              v-for="category in availableCategories"
-              :key="category.category_id"
-              :value="category.category_id"
+          <div class="flex gap-2">
+            <select
+              v-model="form.category_id"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              :class="{ 'border-error-300': errors.category_id }"
             >
-              {{ category.name }}
-            </option>
-          </select>
+              <option value="">Selecione uma categoria</option>
+              <option
+                v-for="category in availableCategories"
+                :key="category.category_id"
+                :value="category.category_id"
+              >
+                {{ category.name }}
+              </option>
+            </select>
+            <Button type="button" variant="outline" icon="lucide:plus" @click="openNewCategory">
+              Nova
+            </Button>
+          </div>
           <p
             v-if="errors.category_id"
             class="text-sm text-error-600 dark:text-error-400 mt-1"
@@ -195,6 +200,13 @@
         </div>
       </form>
     </Card>
+
+    <CategoryModal
+      :isOpen="showCategoryModal"
+      :type="isIncome ? 'income' : 'expense'"
+      @update:isOpen="showCategoryModal = $event"
+      @saved="onCategoryCreated"
+    />
   </div>
 </template>
 
@@ -228,6 +240,8 @@ const errors = reactive({
   wallet_id: '',
   category_id: ''
 })
+
+const showCategoryModal = ref(false)
 
 // Computed
 const isIncome = computed(() => transactionType.value === 'income')
@@ -326,6 +340,19 @@ const handleSubmit = async () => {
   }
 }
 
+const openNewCategory = () => {
+  showCategoryModal.value = true
+}
+
+const onCategoryCreated = async (created: import('~/types').Category) => {
+  // Garantir listas atualizadas
+  if (isIncome.value) await categoriesStore.fetchIncomeCategories()
+  else await categoriesStore.fetchExpenseCategories(true)
+
+  // Selecionar automaticamente a nova categoria
+  form.category_id = created.category_id
+}
+
 // Initialize
 onMounted(async () => {
   // Set transaction type from query
@@ -337,7 +364,7 @@ onMounted(async () => {
     await Promise.all([
       walletsStore.fetchWallets(),
       categoriesStore.fetchIncomeCategories(),
-      categoriesStore.fetchExpenseCategories()
+      categoriesStore.fetchExpenseCategories(true)
     ])
 
     // Set default wallet if available

@@ -39,12 +39,17 @@
 
         <div>
           <label class="label">Categoria</label>
-          <select v-model="form.income_category_id" class="input" :class="{ 'border-error-300': errors.income_category_id }">
-            <option value="">Selecione uma categoria</option>
-            <option v-for="c in categoriesStore.incomeCategories" :key="c.category_id" :value="c.category_id">
-              {{ c.name }}
-            </option>
-          </select>
+          <div class="flex gap-2">
+            <select v-model="form.income_category_id" class="input" :class="{ 'border-error-300': errors.income_category_id }">
+              <option value="">Selecione uma categoria</option>
+              <option v-for="c in categoriesStore.incomeCategories" :key="c.category_id" :value="c.category_id">
+                {{ c.name }}
+              </option>
+            </select>
+            <Button type="button" variant="outline" icon="lucide:plus" @click="showCategoryModal = true">
+              Nova
+            </Button>
+          </div>
           <p v-if="errors.income_category_id" class="text-sm text-error-600 dark:text-error-400 mt-1">{{ errors.income_category_id }}</p>
         </div>
 
@@ -65,6 +70,13 @@
         </div>
       </form>
     </Card>
+
+    <CategoryModal
+      :isOpen="showCategoryModal"
+      type="income"
+      @update:isOpen="showCategoryModal = $event"
+      @saved="onCategoryCreated"
+    />
   </div>
 </template>
 
@@ -95,6 +107,8 @@ const errors = reactive({
   wallet_id: '',
   income_category_id: ''
 })
+
+const showCategoryModal = ref(false)
 
 const isFormValid = computed(() => {
   return form.amount && form.date && form.wallet_id && form.income_category_id &&
@@ -138,6 +152,11 @@ onMounted(async () => {
     ])
   } catch {}
 })
+
+const onCategoryCreated = async (created: import('~/types').Category) => {
+  await categoriesStore.fetchIncomeCategories()
+  form.income_category_id = created.category_id
+}
 
 watch(() => form.amount, () => { if (errors.amount) errors.amount = '' })
 watch(() => form.date, () => { if (errors.date) errors.date = '' })
