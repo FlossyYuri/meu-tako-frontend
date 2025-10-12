@@ -39,8 +39,10 @@ export const useApi = () => {
   const isDateOnly = (value: string): boolean =>
     /^\d{4}-\d{2}-\d{2}$/.test(value);
 
+  const isNumericTimestampString = (value: string): boolean =>
+    /^\d+$/.test(value);
+
   const formatDateOnlyString = (value: string): string => {
-    // value no formato YYYY-MM-DD -> DD/MM/YYYY sem criar Date (evita fuso)
     const [y, m, d] = value.split('-');
     return `${d}/${m}/${y}`;
   };
@@ -48,22 +50,26 @@ export const useApi = () => {
   const toValidDate = (value: string | Date): Date | null => {
     if (!value) return null;
     if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
-    // Se for um date-only, não convertemos em Date aqui (devolvemos null para forçar tratamento especial)
-    if (isDateOnly(value)) return null;
-    const dt = new Date(value);
-    return isNaN(dt.getTime()) ? null : dt;
+    if (typeof value === 'string') {
+      if (isDateOnly(value)) return null; // tratado separadamente
+      if (isNumericTimestampString(value)) {
+        const ms = Number(value);
+        if (Number.isFinite(ms)) {
+          const dt = new Date(ms);
+          return isNaN(dt.getTime()) ? null : dt;
+        }
+      }
+      const dt = new Date(value);
+      return isNaN(dt.getTime()) ? null : dt;
+    }
+    return null;
   };
 
   const formatDate = (date: string | Date): string => {
     if (!date) return '';
-    if (typeof date === 'string' && isDateOnly(date)) {
-      return formatDateOnlyString(date);
-    }
+    if (typeof date === 'string' && isDateOnly(date)) return formatDateOnlyString(date);
     const dt = toValidDate(date);
-    if (!dt) {
-      console.warn('Invalid date provided to formatDate:', date);
-      return 'Data inválida';
-    }
+    if (!dt) return 'Data inválida';
     return new Intl.DateTimeFormat('pt-MZ', {
       day: '2-digit',
       month: '2-digit',
@@ -73,15 +79,9 @@ export const useApi = () => {
 
   const formatDateTime = (date: string | Date): string => {
     if (!date) return '';
-    // Para strings date-only, apenas formata como data (sem hora)
-    if (typeof date === 'string' && isDateOnly(date)) {
-      return formatDateOnlyString(date);
-    }
+    if (typeof date === 'string' && isDateOnly(date)) return formatDateOnlyString(date);
     const dt = toValidDate(date);
-    if (!dt) {
-      console.warn('Invalid date provided to formatDateTime:', date);
-      return 'Data inválida';
-    }
+    if (!dt) return 'Data inválida';
     return new Intl.DateTimeFormat('pt-MZ', {
       day: '2-digit',
       month: '2-digit',
@@ -93,9 +93,7 @@ export const useApi = () => {
 
   const formatRelativeTime = (date: string | Date): string => {
     if (!date) return '';
-    // Se for date-only, trata como meia-noite local sem criar ambiguidade no output (usa o próprio dia)
     if (typeof date === 'string' && isDateOnly(date)) {
-      // Usa diferença com base no dia, sem considerar hora
       const [y, m, d] = date.split('-').map(Number);
       const dt = new Date(y, (m || 1) - 1, d || 1);
       const now = new Date();
@@ -110,36 +108,24 @@ export const useApi = () => {
       return formatDate(date);
     }
     const dt = toValidDate(date);
-    if (!dt) {
-      console.warn('Invalid date provided to formatRelativeTime:', date);
-      return 'Data inválida';
-    }
+    if (!dt) return 'Data inválida';
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - dt.getTime()) / 1000);
     if (diffInSeconds < 60) return 'agora mesmo';
-
     const diffInMinutes = Math.floor(diffInSeconds / 60);
     if (diffInMinutes < 60) return `há ${diffInMinutes} minuto${diffInMinutes > 1 ? 's' : ''}`;
-
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) return `há ${diffInHours} hora${diffInHours > 1 ? 's' : ''}`;
-
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays < 30) return `há ${diffInDays} dia${diffInDays > 1 ? 's' : ''}`;
-
     return formatDate(dt);
   };
 
   const formatISODate = (date: string | Date): string => {
     if (!date) return '';
-    if (typeof date === 'string' && isDateOnly(date)) {
-      return formatDateOnlyString(date);
-    }
+    if (typeof date === 'string' && isDateOnly(date)) return formatDateOnlyString(date);
     const dt = toValidDate(date);
-    if (!dt) {
-      console.warn('Invalid ISO date provided to formatISODate:', date);
-      return 'Data inválida';
-    }
+    if (!dt) return 'Data inválida';
     return new Intl.DateTimeFormat('pt-MZ', {
       day: '2-digit',
       month: '2-digit',
@@ -149,14 +135,9 @@ export const useApi = () => {
 
   const formatISODateTime = (date: string | Date): string => {
     if (!date) return '';
-    if (typeof date === 'string' && isDateOnly(date)) {
-      return formatDateOnlyString(date);
-    }
+    if (typeof date === 'string' && isDateOnly(date)) return formatDateOnlyString(date);
     const dt = toValidDate(date);
-    if (!dt) {
-      console.warn('Invalid ISO date provided to formatISODateTime:', date);
-      return 'Data inválida';
-    }
+    if (!dt) return 'Data inválida';
     return new Intl.DateTimeFormat('pt-MZ', {
       day: '2-digit',
       month: '2-digit',
@@ -167,36 +148,16 @@ export const useApi = () => {
     }).format(dt);
   };
 
-  // Exibição amigável (usa heurística do formato recebido)
   const formatDisplayDate = (date: string | Date): string => {
     if (!date) return '';
-    if (typeof date === 'string' && isDateOnly(date)) {
-      return formatDateOnlyString(date);
-    }
-    try {
-      const dt = toValidDate(date);
-      if (!dt) {
-        console.warn('Invalid date provided to formatDisplayDate:', date);
-        return 'Data inválida';
-      }
-      // Se for ISO com tempo (tem 'T'), mostra data simples
-      if (typeof date === 'string' && date.includes('T')) {
-        return new Intl.DateTimeFormat('pt-MZ', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-        }).format(dt);
-      }
-      // Fallback
-      return new Intl.DateTimeFormat('pt-MZ', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      }).format(dt);
-    } catch (e) {
-      console.error('Error formatting date:', e);
-      return 'Data inválida';
-    }
+    if (typeof date === 'string' && isDateOnly(date)) return formatDateOnlyString(date);
+    const dt = toValidDate(date);
+    if (!dt) return 'Data inválida';
+    return new Intl.DateTimeFormat('pt-MZ', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(dt);
   };
 
   const generateId = (): string => Math.random().toString(36).substr(2, 9);
