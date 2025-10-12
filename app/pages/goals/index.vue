@@ -15,13 +15,18 @@
       </Button>
     </div>
 
+    <!-- Loading -->
+    <div v-if="goalsStore.isLoading" class="py-12">
+      <LoadingSpinner center text="Carregando metas..." />
+    </div>
+
     <!-- Goals Grid -->
     <div
-      v-if="goals.length > 0"
+      v-else-if="goalsStore.goals.length > 0"
       class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
     >
       <Card
-        v-for="goal in goals"
+        v-for="goal in goalsStore.goals"
         :key="goal.goal_id"
         class="hover:shadow-lg transition-shadow duration-200"
       >
@@ -47,9 +52,7 @@
               <div class="flex justify-between text-sm mb-1">
                 <span class="text-gray-600 dark:text-gray-400">Progresso</span>
                 <span class="font-medium text-gray-900 dark:text-white">
-                  {{ calculatePercentage(goal.current_amount, goal.target_amount)
-
-                  }}%
+                  {{ calculatePercentage(goal.current_amount, goal.target_amount) }}%
                 </span>
               </div>
               <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
@@ -63,17 +66,13 @@
             <!-- Amounts -->
             <div class="space-y-2">
               <div class="flex justify-between">
-                <span class="text-sm text-gray-600 dark:text-gray-400"
-                  >Arrecadado</span
-                >
+                <span class="text-sm text-gray-600 dark:text-gray-400">Arrecadado</span>
                 <span class="font-semibold text-gray-900 dark:text-white">
                   {{ formatCurrency(goal.current_amount) }}
                 </span>
               </div>
               <div class="flex justify-between">
-                <span class="text-sm text-gray-600 dark:text-gray-400"
-                  >Meta</span
-                >
+                <span class="text-sm text-gray-600 dark:text-gray-400">Meta</span>
                 <span class="font-semibold text-gray-900 dark:text-white">
                   {{ formatCurrency(goal.target_amount) }}
                 </span>
@@ -81,9 +80,7 @@
               <div
                 class="flex justify-between border-t border-gray-200 dark:border-gray-700 pt-2"
               >
-                <span class="text-sm text-gray-600 dark:text-gray-400"
-                  >Restante</span
-                >
+                <span class="text-sm text-gray-600 dark:text-gray-400">Restante</span>
                 <span class="font-semibold text-primary-600">
                   {{ formatCurrency(goal.target_amount - goal.current_amount) }}
                 </span>
@@ -91,10 +88,7 @@
             </div>
 
             <!-- Description -->
-            <p
-              v-if="goal.description"
-              class="text-sm text-gray-600 dark:text-gray-400"
-            >
+            <p v-if="goal.description" class="text-sm text-gray-600 dark:text-gray-400">
               {{ goal.description }}
             </p>
           </div>
@@ -115,6 +109,11 @@
         Criar Primeira Meta
       </Button>
     </div>
+
+    <!-- Error -->
+    <div v-if="goalsStore.error" class="text-center text-error-600 dark:text-error-400">
+      {{ goalsStore.error }}
+    </div>
   </div>
 </template>
 
@@ -123,39 +122,15 @@ definePageMeta({
   middleware: 'auth'
 })
 
+const goalsStore = useGoalsStore()
 const { formatCurrency, formatDisplayDate, calculatePercentage } = useApi()
+const { error: showError } = useNotifications()
 
-// Mock data - in real app this would come from a store
-const goals = ref([
-  {
-    goal_id: '1',
-    title: 'Férias 2025',
-    description: 'Viajar para Portugal',
-    target_amount: 10000,
-    current_amount: 3500,
-    start_date: '2025-01-01',
-    end_date: '2025-12-31',
-    is_active: true
-  },
-  {
-    goal_id: '2',
-    title: 'Reserva de Emergência',
-    description: 'Fundos para emergências',
-    target_amount: 5000,
-    current_amount: 2000,
-    start_date: '2025-01-01',
-    end_date: '2025-06-30',
-    is_active: true
-  },
-  {
-    goal_id: '3',
-    title: 'Novo Carro',
-    description: 'Entrada para um novo veículo',
-    target_amount: 15000,
-    current_amount: 8000,
-    start_date: '2024-06-01',
-    end_date: '2025-12-31',
-    is_active: false
+onMounted(async () => {
+  try {
+    await goalsStore.fetchGoals()
+  } catch (err) {
+    showError('Erro ao carregar metas')
   }
-])
+})
 </script>

@@ -1,3 +1,5 @@
+/* Updated type definitions aligned with API docs */
+
 // User types
 export interface User {
   user_id: string;
@@ -32,8 +34,8 @@ export interface UpdateProfileRequest {
 }
 
 export interface ChangePasswordRequest {
-  current_password: string;
-  new_password: string;
+  currentPassword: string;
+  newPassword: string;
 }
 
 // Wallet types
@@ -69,8 +71,8 @@ export interface Category {
 export interface CreateCategoryRequest {
   name: string;
   description?: string;
-  color: string;
-  icon: string;
+  color?: string;
+  icon?: string;
 }
 
 export interface UpdateCategoryRequest {
@@ -123,6 +125,7 @@ export interface Expense {
 }
 
 export interface CreateIncomeRequest {
+  wallet_id: string;
   income_category_id: string;
   amount: number;
   description?: string;
@@ -131,6 +134,7 @@ export interface CreateIncomeRequest {
 }
 
 export interface CreateExpenseRequest {
+  wallet_id: string;
   expense_category_id: string;
   amount: number;
   description?: string;
@@ -166,6 +170,7 @@ export interface CreateGoalRequest {
   target_amount: number;
   start_date: string;
   end_date: string;
+  expense_category_id?: string;
 }
 
 export interface UpdateGoalRequest {
@@ -174,6 +179,7 @@ export interface UpdateGoalRequest {
   target_amount?: number;
   start_date?: string;
   end_date?: string;
+  expense_category_id?: string;
 }
 
 export interface ContributeToGoalRequest {
@@ -208,12 +214,15 @@ export interface CreateLimitRequest {
   amount: number;
   start_date: string;
   end_date: string;
+  description?: string;
 }
 
 export interface UpdateLimitRequest {
+  expense_category_id?: string;
   amount?: number;
   start_date?: string;
   end_date?: string;
+  description?: string;
 }
 
 export interface LimitStatus {

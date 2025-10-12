@@ -239,9 +239,7 @@
               <div class="space-y-3">
                 <div class="flex items-center justify-between">
                   <div>
-                    <p
-                      class="text-sm font-medium text-gray-900 dark:text-white"
-                    >
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">
                       Lembretes de pagamento
                     </p>
                     <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -257,9 +255,7 @@
 
                 <div class="flex items-center justify-between">
                   <div>
-                    <p
-                      class="text-sm font-medium text-gray-900 dark:text-white"
-                    >
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">
                       Relatórios mensais
                     </p>
                     <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -290,9 +286,7 @@
 
           <div class="space-y-6">
             <!-- Export Data -->
-            <div
-              class="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
-            >
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
               <div class="flex items-center justify-between">
                 <div>
                   <h3 class="font-medium text-gray-900 dark:text-white">
@@ -309,9 +303,7 @@
             </div>
 
             <!-- Delete Account -->
-            <div
-              class="border border-error-200 dark:border-error-800 rounded-lg p-4 bg-error-50 dark:bg-error-900"
-            >
+            <div class="border border-error-200 dark:border-error-800 rounded-lg p-4 bg-error-50 dark:bg-error-900">
               <div class="flex items-center justify-between">
                 <div>
                   <h3 class="font-medium text-error-900 dark:text-error-100">
@@ -419,8 +411,8 @@ const updateProfile = async () => {
 const changePassword = async () => {
   try {
     await authStore.changePassword({
-      current_password: passwordForm.current_password,
-      new_password: passwordForm.new_password
+      currentPassword: passwordForm.current_password,
+      newPassword: passwordForm.new_password
     })
     success('Senha alterada com sucesso!')
     // Clear form

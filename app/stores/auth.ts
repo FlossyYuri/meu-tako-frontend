@@ -4,6 +4,7 @@ import type {
   AuthResponse,
   LoginRequest,
   RegisterRequest,
+  ChangePasswordRequest,
 } from '~/types';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -178,17 +179,14 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
-  const changePassword = async (passwordData: {
-    current_password: string;
-    new_password: string;
-  }) => {
+  const changePassword = async (payload: ChangePasswordRequest) => {
     try {
       isLoading.value = true;
       error.value = null;
 
       await $fetch('/users/change-password', {
         method: 'PUT',
-        body: passwordData,
+        body: payload, // { currentPassword, newPassword }
         headers: {
           Authorization: `Bearer ${token.value}`,
         },

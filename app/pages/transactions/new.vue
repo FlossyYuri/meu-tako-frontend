@@ -144,6 +144,10 @@
           >
             {{ errors.category_id }}
           </p>
+
+          <div v-if="categoriesStore.isLoading" class="mt-2">
+            <LoadingSpinner size="sm" text="Carregando categorias..." />
+          </div>
         </div>
 
         <!-- Status -->
@@ -202,6 +206,7 @@ definePageMeta({
 const route = useRoute()
 const walletsStore = useWalletsStore()
 const transactionsStore = useTransactionsStore()
+const categoriesStore = useCategoriesStore()
 const { formatCurrency } = useApi()
 const { success, error: showError } = useNotifications()
 
@@ -228,15 +233,9 @@ const errors = reactive({
 const isIncome = computed(() => transactionType.value === 'income')
 
 const availableCategories = computed(() => {
-  // This would come from a categories store
-  // For now, return mock data
-  return [
-    { category_id: '1', name: 'Alimentação' },
-    { category_id: '2', name: 'Transporte' },
-    { category_id: '3', name: 'Lazer' },
-    { category_id: '4', name: 'Saúde' },
-    { category_id: '5', name: 'Educação' }
-  ]
+  return isIncome.value
+    ? categoriesStore.incomeCategories
+    : categoriesStore.expenseCategories
 })
 
 const isFormValid = computed(() => {
@@ -256,14 +255,12 @@ const isFormValid = computed(() => {
 
 // Methods
 const validateForm = () => {
-  // Clear previous errors
   Object.keys(errors).forEach(key => {
     errors[key as keyof typeof errors] = ''
   })
 
   let isValid = true
 
-  // Amount validation
   if (!form.amount) {
     errors.amount = 'Valor é obrigatório'
     isValid = false
@@ -272,25 +269,21 @@ const validateForm = () => {
     isValid = false
   }
 
-  // Description validation
   if (!form.description.trim()) {
     errors.description = 'Descrição é obrigatória'
     isValid = false
   }
 
-  // Date validation
   if (!form.date) {
     errors.date = 'Data é obrigatória'
     isValid = false
   }
 
-  // Wallet validation
   if (!form.wallet_id) {
     errors.wallet_id = 'Carteira é obrigatória'
     isValid = false
   }
 
-  // Category validation
   if (!form.category_id) {
     errors.category_id = 'Categoria é obrigatória'
     isValid = false
@@ -305,20 +298,25 @@ const handleSubmit = async () => {
   try {
     transactionsStore.clearError()
 
-    const transactionData = {
-      amount: parseFloat(form.amount),
-      description: form.description.trim(),
-      date: form.date,
-      wallet_id: form.wallet_id,
-      category_id: form.category_id,
-      status: form.status
-    }
-
     if (isIncome.value) {
-      await transactionsStore.createIncome(transactionData)
+      await transactionsStore.createIncome({
+        wallet_id: form.wallet_id,
+        income_category_id: form.category_id,
+        amount: parseFloat(form.amount),
+        description: form.description.trim(),
+        date: form.date,
+        received: form.status
+      })
       success('Receita adicionada com sucesso!')
     } else {
-      await transactionsStore.createExpense(transactionData)
+      await transactionsStore.createExpense({
+        wallet_id: form.wallet_id,
+        expense_category_id: form.category_id,
+        amount: parseFloat(form.amount),
+        description: form.description.trim(),
+        date: form.date,
+        paid: form.status
+      })
       success('Despesa adicionada com sucesso!')
     }
 
@@ -328,16 +326,19 @@ const handleSubmit = async () => {
   }
 }
 
-// Initialize form based on route query
+// Initialize
 onMounted(async () => {
   // Set transaction type from query
   if (route.query.type === 'income') {
     transactionType.value = 'income'
   }
 
-  // Load wallets
   try {
-    await walletsStore.fetchWallets()
+    await Promise.all([
+      walletsStore.fetchWallets(),
+      categoriesStore.fetchIncomeCategories(),
+      categoriesStore.fetchExpenseCategories()
+    ])
 
     // Set default wallet if available
     if (walletsStore.wallets.length > 0 && !form.wallet_id) {
@@ -347,28 +348,14 @@ onMounted(async () => {
       }
     }
   } catch (error) {
-    showError('Erro ao carregar carteiras')
+    showError('Erro ao carregar dados iniciais')
   }
 })
 
-// Clear errors when user types
-watch(() => form.amount, () => {
-  if (errors.amount) errors.amount = ''
-})
-
-watch(() => form.description, () => {
-  if (errors.description) errors.description = ''
-})
-
-watch(() => form.date, () => {
-  if (errors.date) errors.date = ''
-})
-
-watch(() => form.wallet_id, () => {
-  if (errors.wallet_id) errors.wallet_id = ''
-})
-
-watch(() => form.category_id, () => {
-  if (errors.category_id) errors.category_id = ''
-})
+// Clear errors when typing
+watch(() => form.amount, () => { if (errors.amount) errors.amount = '' })
+watch(() => form.description, () => { if (errors.description) errors.description = '' })
+watch(() => form.date, () => { if (errors.date) errors.date = '' })
+watch(() => form.wallet_id, () => { if (errors.wallet_id) errors.wallet_id = '' })
+watch(() => form.category_id, () => { if (errors.category_id) errors.category_id = '' })
 </script>
