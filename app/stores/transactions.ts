@@ -125,12 +125,16 @@ export const useTransactionsStore = defineStore('transactions', () => {
   });
 
   // Actions
-  const fetchTransactions = async (walletId?: string) => {
+  const fetchTransactions = async (walletId?: string, page?: number, limit?: number) => {
     try {
       isLoading.value = true;
       error.value = null;
 
-      const params = walletId ? { wallet_id: walletId } : {};
+      const params: Record<string, string | number> = {};
+      if (walletId) params.wallet_id = walletId;
+      if (page) params.page = page;
+      if (limit) params.limit = limit;
+
       const response = await $fetch<Transaction[]>('/transactions', {
         params,
         headers: {
@@ -143,6 +147,32 @@ export const useTransactionsStore = defineStore('transactions', () => {
       return response;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao carregar transações';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const fetchTransactionById = async (transactionId: string) => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+
+      const response = await $fetch<Transaction>(`/transactions/${transactionId}`, {
+        headers: {
+          Authorization: `Bearer ${useAuthStore().token}`,
+        },
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+
+      // Atualiza ou insere na lista local
+      const idx = transactions.value.findIndex(t => t.transaction_id === transactionId);
+      if (idx !== -1) transactions.value[idx] = response;
+      else transactions.value.push(response);
+
+      return response;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao carregar transação';
       throw err;
     } finally {
       isLoading.value = false;
@@ -582,6 +612,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
 
     // Actions
     fetchTransactions,
+    fetchTransactionById,
     fetchIncomes,
     fetchIncomeById,
     fetchExpenses,
