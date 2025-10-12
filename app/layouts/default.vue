@@ -208,6 +208,7 @@ const { isDark, toggle: toggleTheme } = useDark()
 const navigation = [
   { name: 'Dashboard', href: '/', icon: 'lucide:layout-dashboard' },
   { name: 'Transações', href: '/transactions', icon: 'lucide:credit-card' },
+  { name: 'Despesas', href: '/expenses', icon: 'lucide:minus' },
   { name: 'Carteiras', href: '/wallets', icon: 'lucide:wallet' },
   { name: 'Metas', href: '/goals', icon: 'lucide:target' },
   { name: 'Relatórios', href: '/reports', icon: 'lucide:bar-chart-3' }
