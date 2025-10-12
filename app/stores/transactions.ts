@@ -25,16 +25,11 @@ export const useTransactionsStore = defineStore('transactions', () => {
     }
 
     return transactions.value
-      .filter((transaction) => transaction.date) // Filter out transactions without dates
+      .filter((transaction) => transaction.date)
       .sort((a, b) => {
         const dateA = new Date(a.date);
         const dateB = new Date(b.date);
-
-        // Handle invalid dates
-        if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-          return 0;
-        }
-
+        if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
         return dateB.getTime() - dateA.getTime();
       })
       .slice(0, 10);
@@ -47,9 +42,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
       filtered = filtered.filter((t) => {
         const transactionDate = new Date(t.date);
         const startDate = new Date(filters.value.start_date!);
-        return (
-          !isNaN(transactionDate.getTime()) && transactionDate >= startDate
-        );
+        return !isNaN(transactionDate.getTime()) && transactionDate >= startDate;
       });
     }
 
@@ -68,9 +61,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
     }
 
     if (filters.value.wallet_id) {
-      filtered = filtered.filter(
-        (t) => t.wallet_id === filters.value.wallet_id
-      );
+      filtered = filtered.filter((t) => t.wallet_id === filters.value.wallet_id);
     }
 
     if (filters.value.type) {
@@ -88,12 +79,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
     return filtered.sort((a, b) => {
       const dateA = new Date(a.date);
       const dateB = new Date(b.date);
-
-      // Handle invalid dates
-      if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-        return 0;
-      }
-
+      if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
       return dateB.getTime() - dateA.getTime();
     });
   });
@@ -163,12 +149,16 @@ export const useTransactionsStore = defineStore('transactions', () => {
     }
   };
 
-  const fetchIncomes = async (walletId?: string) => {
+  const fetchIncomes = async (walletId?: string, page?: number, limit?: number) => {
     try {
       isLoading.value = true;
       error.value = null;
 
-      const params = walletId ? { wallet_id: walletId } : {};
+      const params: Record<string, string | number> = {};
+      if (walletId) params.wallet_id = walletId;
+      if (page) params.page = page;
+      if (limit) params.limit = limit;
+
       const response = await $fetch<Income[]>('/incomes', {
         params,
         headers: {
@@ -181,6 +171,31 @@ export const useTransactionsStore = defineStore('transactions', () => {
       return response;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao carregar receitas';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const fetchIncomeById = async (incomeId: string) => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+
+      const response = await $fetch<Income>(`/incomes/${incomeId}`, {
+        headers: {
+          Authorization: `Bearer ${useAuthStore().token}`,
+        },
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+
+      const idx = incomes.value.findIndex((i) => i.income_id === incomeId);
+      if (idx !== -1) incomes.value[idx] = response;
+      else incomes.value.push(response);
+
+      return response;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao carregar receita';
       throw err;
     } finally {
       isLoading.value = false;
@@ -256,7 +271,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
 
       incomes.value.push(response);
 
-      // Update wallet balance
+      // Update wallet balance (mantido conforme padrão atual)
       const walletsStore = useWalletsStore();
       const wallet = walletsStore.getWalletById(response.wallet_id);
       if (wallet) {
@@ -291,7 +306,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
 
       expenses.value.push(response);
 
-      // Update wallet balance
+      // Update wallet balance (mantido conforme padrão atual)
       const walletsStore = useWalletsStore();
       const wallet = walletsStore.getWalletById(response.wallet_id);
       if (wallet) {
@@ -372,6 +387,44 @@ export const useTransactionsStore = defineStore('transactions', () => {
     }
   };
 
+  const deleteIncome = async (incomeId: string) => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+
+      const income = incomes.value.find((i) => i.income_id === incomeId);
+
+      await $fetch(`/incomes/${incomeId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${useAuthStore().token}`,
+        },
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+
+      incomes.value = incomes.value.filter((i) => i.income_id !== incomeId);
+
+      // Ajuste de saldo local (espelhando comportamento existente)
+      if (income) {
+        const walletsStore = useWalletsStore();
+        const wallet = walletsStore.getWalletById(income.wallet_id);
+        if (wallet) {
+          walletsStore.updateWalletBalance(
+            income.wallet_id,
+            wallet.balance - income.amount
+          );
+        }
+      }
+
+      return true;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao deletar receita';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
   const deleteExpense = async (expenseId: string) => {
     try {
       isLoading.value = true;
@@ -389,7 +442,6 @@ export const useTransactionsStore = defineStore('transactions', () => {
 
       expenses.value = expenses.value.filter((e) => e.expense_id !== expenseId);
 
-      // Update wallet balance
       if (expense) {
         const walletsStore = useWalletsStore();
         const wallet = walletsStore.getWalletById(expense.wallet_id);
@@ -480,11 +532,8 @@ export const useTransactionsStore = defineStore('transactions', () => {
 
       transactions.value.push(response);
 
-      // Update wallet balances
       const walletsStore = useWalletsStore();
-      const fromWallet = walletsStore.getWalletById(
-        transferData.from_wallet_id
-      );
+      const fromWallet = walletsStore.getWalletById(transferData.from_wallet_id);
       const toWallet = walletsStore.getWalletById(transferData.to_wallet_id);
 
       if (fromWallet) {
@@ -543,12 +592,14 @@ export const useTransactionsStore = defineStore('transactions', () => {
     // Actions
     fetchTransactions,
     fetchIncomes,
+    fetchIncomeById,
     fetchExpenses,
     fetchExpenseById,
     createIncome,
     createExpense,
     updateIncome,
     updateExpense,
+    deleteIncome,
     deleteExpense,
     markIncomeAsReceived,
     markExpenseAsPaid,

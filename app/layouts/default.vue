@@ -208,6 +208,7 @@ const { isDark, toggle: toggleTheme } = useDark()
 const navigation = [
   { name: 'Dashboard', href: '/', icon: 'lucide:layout-dashboard' },
   { name: 'Transações', href: '/transactions', icon: 'lucide:credit-card' },
+  { name: 'Receitas', href: '/incomes', icon: 'lucide:arrow-up' },
   { name: 'Despesas', href: '/expenses', icon: 'lucide:minus' },
   { name: 'Carteiras', href: '/wallets', icon: 'lucide:wallet' },
   { name: 'Metas', href: '/goals', icon: 'lucide:target' },
@@ -234,9 +235,8 @@ const toggleMobileMenu = () => {
 const handleLogout = async () => {
   try {
     await authStore.logout()
+  } finally {
     await navigateTo('/auth/login')
-  } catch (error) {
-    console.error('Erro ao fazer logout:', error)
   }
 }
 
@@ -247,7 +247,6 @@ onClickOutside(userMenuRef, () => {
 
 // Initialize auth on mount
 onMounted(() => {
-  // Ensure auth is initialized
   if (import.meta.client) {
     authStore.initializeAuth()
   }

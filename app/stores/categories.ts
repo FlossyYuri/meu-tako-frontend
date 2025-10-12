@@ -7,6 +7,7 @@ export const useCategoriesStore = defineStore('categories', () => {
   const isLoading = ref(false);
   const error = ref<string | null>(null);
 
+  // Income Categories
   const fetchIncomeCategories = async () => {
     isLoading.value = true;
     error.value = null;
@@ -25,6 +26,90 @@ export const useCategoriesStore = defineStore('categories', () => {
     }
   };
 
+  const getIncomeCategoryById = (id: string) =>
+    incomeCategories.value.find(c => c.category_id === id);
+
+  const getIncomeCategoryRemote = async (id: string) => {
+    isLoading.value = true;
+    error.value = null;
+    try {
+      const data = await $fetch<Category>(`/income-categories/${id}`, {
+        headers: { Authorization: `Bearer ${useAuthStore().token}` },
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+      const idx = incomeCategories.value.findIndex(c => c.category_id === id);
+      if (idx !== -1) incomeCategories.value[idx] = data;
+      else incomeCategories.value.push(data);
+      return data;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao obter categoria de receita';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const createIncomeCategory = async (payload: CreateCategoryRequest) => {
+    isLoading.value = true;
+    error.value = null;
+    try {
+      const created = await $fetch<Category>('/income-categories', {
+        method: 'POST',
+        body: payload,
+        headers: { Authorization: `Bearer ${useAuthStore().token}` },
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+      incomeCategories.value.push(created);
+      return created;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao criar categoria de receita';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const updateIncomeCategory = async (categoryId: string, payload: UpdateCategoryRequest) => {
+    isLoading.value = true;
+    error.value = null;
+    try {
+      const updated = await $fetch<Category>(`/income-categories/${categoryId}`, {
+        method: 'PUT',
+        body: payload,
+        headers: { Authorization: `Bearer ${useAuthStore().token}` },
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+      const idx = incomeCategories.value.findIndex(c => c.category_id === categoryId);
+      if (idx !== -1) incomeCategories.value[idx] = updated;
+      return updated;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao atualizar categoria de receita';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const deleteIncomeCategory = async (categoryId: string) => {
+    isLoading.value = true;
+    error.value = null;
+    try {
+      await $fetch(`/income-categories/${categoryId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${useAuthStore().token}` },
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+      incomeCategories.value = incomeCategories.value.filter(c => c.category_id !== categoryId);
+      return true;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao deletar categoria de receita';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  // Expense Categories
   const fetchExpenseCategories = async (onlyActive = true) => {
     isLoading.value = true;
     error.value = null;
@@ -43,9 +128,6 @@ export const useCategoriesStore = defineStore('categories', () => {
       isLoading.value = false;
     }
   };
-
-  const getIncomeCategoryById = (id: string) =>
-    incomeCategories.value.find(c => c.category_id === id);
 
   const getExpenseCategoryById = (id: string) =>
     expenseCategories.value.find(c => c.category_id === id);
@@ -158,17 +240,27 @@ export const useCategoriesStore = defineStore('categories', () => {
     expenseCategories,
     isLoading,
     error,
-    // getters
+
+    // income getters
     getIncomeCategoryById,
+    // expense getters
     getExpenseCategoryById,
-    // actions
+
+    // income actions
     fetchIncomeCategories,
+    getIncomeCategoryRemote,
+    createIncomeCategory,
+    updateIncomeCategory,
+    deleteIncomeCategory,
+
+    // expense actions
     fetchExpenseCategories,
     getExpenseCategoryRemote,
     createExpenseCategory,
     updateExpenseCategory,
     deleteExpenseCategory,
     toggleExpenseCategoryActive,
+
     clearError,
   };
 });
