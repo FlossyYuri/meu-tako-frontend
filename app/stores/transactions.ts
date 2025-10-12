@@ -187,12 +187,16 @@ export const useTransactionsStore = defineStore('transactions', () => {
     }
   };
 
-  const fetchExpenses = async (walletId?: string) => {
+  const fetchExpenses = async (walletId?: string, page?: number, limit?: number) => {
     try {
       isLoading.value = true;
       error.value = null;
 
-      const params = walletId ? { wallet_id: walletId } : {};
+      const params: Record<string, string | number> = {};
+      if (walletId) params.wallet_id = walletId;
+      if (page) params.page = page;
+      if (limit) params.limit = limit;
+
       const response = await $fetch<Expense[]>('/expenses', {
         params,
         headers: {
@@ -205,6 +209,31 @@ export const useTransactionsStore = defineStore('transactions', () => {
       return response;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao carregar despesas';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const fetchExpenseById = async (expenseId: string) => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+
+      const response = await $fetch<Expense>(`/expenses/${expenseId}`, {
+        headers: {
+          Authorization: `Bearer ${useAuthStore().token}`,
+        },
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+
+      const idx = expenses.value.findIndex(e => e.expense_id === expenseId);
+      if (idx !== -1) expenses.value[idx] = response;
+      else expenses.value.push(response);
+
+      return response;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao carregar despesa';
       throw err;
     } finally {
       isLoading.value = false;
@@ -337,44 +366,6 @@ export const useTransactionsStore = defineStore('transactions', () => {
       return response;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao atualizar despesa';
-      throw err;
-    } finally {
-      isLoading.value = false;
-    }
-  };
-
-  const deleteIncome = async (incomeId: string) => {
-    try {
-      isLoading.value = true;
-      error.value = null;
-
-      const income = incomes.value.find((i) => i.income_id === incomeId);
-
-      await $fetch(`/incomes/${incomeId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${useAuthStore().token}`,
-        },
-        baseURL: useRuntimeConfig().public.apiBase,
-      });
-
-      incomes.value = incomes.value.filter((i) => i.income_id !== incomeId);
-
-      // Update wallet balance
-      if (income) {
-        const walletsStore = useWalletsStore();
-        const wallet = walletsStore.getWalletById(income.wallet_id);
-        if (wallet) {
-          walletsStore.updateWalletBalance(
-            income.wallet_id,
-            wallet.balance - income.amount
-          );
-        }
-      }
-
-      return true;
-    } catch (err: any) {
-      error.value = err.data?.message || 'Erro ao deletar receita';
       throw err;
     } finally {
       isLoading.value = false;
@@ -553,11 +544,11 @@ export const useTransactionsStore = defineStore('transactions', () => {
     fetchTransactions,
     fetchIncomes,
     fetchExpenses,
+    fetchExpenseById,
     createIncome,
     createExpense,
     updateIncome,
     updateExpense,
-    deleteIncome,
     deleteExpense,
     markIncomeAsReceived,
     markExpenseAsPaid,
