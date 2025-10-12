@@ -21,13 +21,13 @@
         <LoadingSpinner text="Carregando categorias..." />
       </div>
 
-      <div v-else-if="categoriesStore.expenseCategories.length === 0" class="p-6 text-center">
+      <div v-else-if="displayedCategories.length === 0" class="p-6 text-center">
         <Icon name="lucide:tags" class="w-10 h-10 text-gray-400 mx-auto mb-2" />
         <p class="text-gray-500 dark:text-gray-400">Nenhuma categoria encontrada</p>
       </div>
 
       <div v-else class="divide-y divide-gray-200 dark:divide-gray-700">
-        <div v-for="c in categoriesStore.expenseCategories" :key="c.category_id" class="p-4 flex items-center justify-between">
+        <div v-for="c in displayedCategories" :key="c.category_id" class="p-4 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: c.color || '#9ca3af' }" />
             <div>
@@ -85,6 +85,12 @@ const errors = reactive({
   name: ''
 })
 
+const displayedCategories = computed(() => {
+  // quando showInactive = false, mostramos somente ativas
+  const base = categoriesStore.expenseCategories
+  return showInactive.value ? base : base.filter(c => c.is_active)
+})
+
 const loadCategories = async () => {
   try {
     await categoriesStore.fetchExpenseCategories(!showInactive.value)
@@ -125,6 +131,7 @@ const onSubmit = async () => {
       success('Categoria criada')
     }
     isOpen.value = false
+    await loadCategories()
   } catch (err: any) {
     showError('Erro ao salvar categoria', err?.message)
   }
@@ -134,6 +141,7 @@ const onToggle = async (id: string) => {
   try {
     await categoriesStore.toggleExpenseCategoryActive(id)
     success('Status alterado')
+    await loadCategories()
   } catch (err: any) {
     showError('Erro ao alterar status', err?.message)
   }
@@ -144,6 +152,7 @@ const onDelete = async (id: string) => {
   try {
     await categoriesStore.deleteExpenseCategory(id)
     success('Categoria excluída')
+    await loadCategories()
   } catch (err: any) {
     showError('Erro ao excluir categoria', err?.message)
   }

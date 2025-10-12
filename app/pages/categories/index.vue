@@ -190,6 +190,7 @@ const filteredIncome = computed(() => {
 const filteredExpense = computed(() => {
   const q = search.value.trim().toLowerCase()
   return categoriesStore.expenseCategories
+    .filter(c => (onlyActiveExpense.value ? c.is_active : true))
     .filter(c => c.name.toLowerCase().includes(q) || (c.description || '').toLowerCase().includes(q))
     .sort((a, b) => a.name.localeCompare(b.name))
 })
@@ -238,8 +239,10 @@ const onDelete = async (c: Category, type: 'income' | 'expense') => {
   try {
     if (type === 'income') {
       await categoriesStore.deleteIncomeCategory(c.category_id)
+      await loadIncomes()
     } else {
       await categoriesStore.deleteExpenseCategory(c.category_id)
+      await loadExpenses()
     }
     success('Categoria excluída')
   } catch (err: any) {
@@ -250,6 +253,7 @@ const onDelete = async (c: Category, type: 'income' | 'expense') => {
 const onToggleActive = async (categoryId: string) => {
   try {
     await categoriesStore.toggleExpenseCategoryActive(categoryId)
+    await loadExpenses()
     success('Status atualizado')
   } catch (err: any) {
     showError('Erro ao atualizar status', err?.message)
