@@ -55,6 +55,9 @@ const emit = defineEmits<{
 const categoriesStore = useCategoriesStore()
 const { success, error: showError } = useNotifications()
 
+// Mantém um ID estável da categoria em edição para evitar 'undefined'
+const editingId = ref<string | null>(props.category?.category_id ?? null)
+
 const form = reactive({
   name: props.category?.name || '',
   description: props.category?.description || ''
@@ -65,12 +68,14 @@ const errors = reactive({
 })
 
 const modalTitle = computed(() => {
-  const action = props.category ? 'Editar' : 'Nova'
+  const action = editingId.value ? 'Editar' : 'Nova'
   const tipo = props.type === 'income' ? 'Categoria de Receita' : 'Categoria de Despesa'
   return `${action} ${tipo}`
 })
 
+// Sincroniza quando a categoria prop muda (abrir modal de edição vs criação)
 watch(() => props.category, (c) => {
+  editingId.value = c?.category_id ?? null
   form.name = c?.name || ''
   form.description = c?.description || ''
 })
@@ -86,24 +91,28 @@ const onSubmit = async () => {
     let saved: Category | null = null
 
     if (props.type === 'income') {
-      if (props.category) {
-        saved = await categoriesStore.updateIncomeCategory(props.category.category_id, {
+      if (editingId.value) {
+        // Editar categoria de receita
+        saved = await categoriesStore.updateIncomeCategory(editingId.value, {
           name: form.name || undefined,
           description: form.description || undefined
         })
       } else {
+        // Criar categoria de receita
         saved = await categoriesStore.createIncomeCategory({
           name: form.name,
           description: form.description || undefined
         })
       }
     } else {
-      if (props.category) {
-        saved = await categoriesStore.updateExpenseCategory(props.category.category_id, {
+      if (editingId.value) {
+        // Editar categoria de despesa
+        saved = await categoriesStore.updateExpenseCategory(editingId.value, {
           name: form.name || undefined,
           description: form.description || undefined
         })
       } else {
+        // Criar categoria de despesa
         saved = await categoriesStore.createExpenseCategory({
           name: form.name,
           description: form.description || undefined
