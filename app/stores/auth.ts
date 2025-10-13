@@ -41,13 +41,13 @@ export const useAuthStore = defineStore('auth', () => {
       });
 
       user.value = response.user;
-      token.value = response.access_token;
-      refreshToken.value = response.refresh_token;
+      token.value = response.accessToken;
+      refreshToken.value = response.refreshToken;
 
       // Store in localStorage
       if (import.meta.client) {
-        localStorage.setItem('auth_token', response.access_token);
-        localStorage.setItem('auth_refresh_token', response.refresh_token);
+        localStorage.setItem('auth_token', response.accessToken);
+        localStorage.setItem('auth_refresh_token', response.refreshToken);
         localStorage.setItem('auth_user', JSON.stringify(response.user));
       }
 
@@ -121,12 +121,12 @@ export const useAuthStore = defineStore('auth', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      token.value = response.access_token;
-      refreshToken.value = response.refresh_token;
+      token.value = response.accessToken;
+      refreshToken.value = response.refreshToken;
 
       if (import.meta.client) {
-        localStorage.setItem('auth_token', response.access_token);
-        localStorage.setItem('auth_refresh_token', response.refresh_token);
+        localStorage.setItem('auth_token', response.accessToken);
+        localStorage.setItem('auth_refresh_token', response.refreshToken);
       }
 
       return response;

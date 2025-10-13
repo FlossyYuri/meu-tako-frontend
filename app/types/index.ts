@@ -11,9 +11,9 @@ export interface User {
 }
 
 export interface AuthResponse {
-  access_token: string;
-  refresh_token: string;
   user: User;
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface LoginRequest {
