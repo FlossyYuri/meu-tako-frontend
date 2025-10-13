@@ -3,24 +3,50 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
         <label class="label">Carteira de origem</label>
-        <select v-model="form.from_wallet_id" class="input" :class="{ 'border-error-300': errors.from_wallet_id }">
+        <select
+          v-model="form.from_wallet_id"
+          class="input"
+          :class="{ 'border-error-300': errors.from_wallet_id }"
+        >
           <option value="">Selecione</option>
-          <option v-for="w in walletsStore.wallets" :key="w.wallet_id" :value="w.wallet_id">
+          <option
+            v-for="w in walletsStore.wallets"
+            :key="w.wallet_id"
+            :value="w.wallet_id"
+          >
             {{ w.wallet_name }}
           </option>
         </select>
-        <p v-if="errors.from_wallet_id" class="text-sm text-error-600 dark:text-error-400 mt-1">{{ errors.from_wallet_id }}</p>
+        <p
+          v-if="errors.from_wallet_id"
+          class="text-sm text-error-600 dark:text-error-400 mt-1"
+        >
+          {{ errors.from_wallet_id }}
+        </p>
       </div>
 
       <div>
         <label class="label">Carteira de destino</label>
-        <select v-model="form.to_wallet_id" class="input" :class="{ 'border-error-300': errors.to_wallet_id }">
+        <select
+          v-model="form.to_wallet_id"
+          class="input"
+          :class="{ 'border-error-300': errors.to_wallet_id }"
+        >
           <option value="">Selecione</option>
-          <option v-for="w in walletsStore.wallets" :key="w.wallet_id" :value="w.wallet_id">
+          <option
+            v-for="w in walletsStore.wallets"
+            :key="w.wallet_id"
+            :value="w.wallet_id"
+          >
             {{ w.wallet_name }}
           </option>
         </select>
-        <p v-if="errors.to_wallet_id" class="text-sm text-error-600 dark:text-error-400 mt-1">{{ errors.to_wallet_id }}</p>
+        <p
+          v-if="errors.to_wallet_id"
+          class="text-sm text-error-600 dark:text-error-400 mt-1"
+        >
+          {{ errors.to_wallet_id }}
+        </p>
       </div>
     </div>
 
@@ -31,8 +57,8 @@
         label="Valor"
         :error="errors.amount"
         required
-        step="0.01"
-        min="0.01"
+        :step="0.01"
+        :min="0.01"
       />
     </div>
 
@@ -46,12 +72,22 @@
     </div>
 
     <div class="flex gap-3">
-      <Button type="button" variant="outline" @click="emit('cancel')">Cancelar</Button>
-      <Button type="submit" variant="primary" :loading="transactionsStore.isLoading" :disabled="!isValid">Transferir</Button>
+      <Button type="button" variant="outline" @click="emit('cancel')"
+        >Cancelar</Button
+      >
+      <Button
+        type="submit"
+        variant="primary"
+        :loading="transactionsStore.isLoading"
+        :disabled="!isValid"
+        >Transferir</Button
+      >
     </div>
 
     <div v-if="transactionsStore.error" class="text-center">
-      <p class="text-sm text-error-600 dark:text-error-400">{{ transactionsStore.error }}</p>
+      <p class="text-sm text-error-600 dark:text-error-400">
+        {{ transactionsStore.error }}
+      </p>
     </div>
   </form>
 </template>

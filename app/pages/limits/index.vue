@@ -208,7 +208,6 @@ const loadLimitStatuses = async () => {
   for (const limit of limitsStore.limits) {
     try {
       const status = await limitsStore.getLimitStatus(limit.limit_id)
-      console.log(`Status for limit ${limit.limit_id}:`, status)
       limitStatuses.value[limit.limit_id] = status
     } catch (err) {
       console.error(`Failed to load status for limit ${limit.limit_id}:`, err)

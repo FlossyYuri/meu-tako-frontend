@@ -1,10 +1,7 @@
 <template>
   <div class="space-y-6">
-    <!-- Period Filter -->
-    <PeriodFilter @filter-change="handleFilterChange" />
-
     <!-- Loading State -->
-    <div v-if="pending" class="space-y-4">
+    <div v-if="props.pending" class="space-y-4">
       <Card>
         <div class="p-6">
           <div class="animate-pulse space-y-4">
@@ -17,7 +14,7 @@
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="text-center py-8">
+    <div v-else-if="props.error" class="text-center py-8">
       <div class="text-red-500 mb-4">
         <Icon name="lucide:alert-circle" class="w-12 h-12 mx-auto" />
       </div>
@@ -25,13 +22,13 @@
         Erro ao carregar relatório
       </h3>
       <p class="text-gray-500 dark:text-gray-400 mb-4">
-        {{ error }}
+        {{ props.error }}
       </p>
-      <Button @click="() => refresh()"> Tentar Novamente </Button>
+      <Button @click="handleRefresh"> Tentar Novamente </Button>
     </div>
 
     <!-- Report Content -->
-    <div v-else-if="data" class="space-y-6">
+    <div v-else-if="props.data" class="space-y-6">
       <!-- Summary Cards -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
@@ -52,7 +49,7 @@
                   Total de Receitas
                 </p>
                 <p class="text-2xl font-semibold text-gray-900 dark:text-white">
-                  {{ formatCurrency(data.totalIncome) }}
+                  {{ formatCurrency(props.data.totalIncome) }}
                 </p>
               </div>
             </div>
@@ -77,7 +74,7 @@
                   Total de Despesas
                 </p>
                 <p class="text-2xl font-semibold text-gray-900 dark:text-white">
-                  {{ formatCurrency(data.totalExpenses) }}
+                  {{ formatCurrency(props.data.totalExpenses) }}
                 </p>
               </div>
             </div>
@@ -103,9 +100,9 @@
                 </p>
                 <p
                   class="text-2xl font-semibold"
-                  :class="data.netIncome >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
+                  :class="props.data.netIncome >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
                 >
-                  {{ formatCurrency(data.netIncome) }}
+                  {{ formatCurrency(props.data.netIncome) }}
                 </p>
               </div>
             </div>
@@ -114,7 +111,7 @@
       </div>
 
       <!-- Income Details -->
-      <Card v-if="data.incomeDetails.length > 0">
+      <Card v-if="props.data.incomeDetails.length > 0">
         <div class="p-6">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Receitas por Categoria
@@ -122,7 +119,7 @@
 
           <div class="space-y-4">
             <div
-              v-for="item in data.incomeDetails"
+              v-for="item in props.data.incomeDetails"
               :key="item.categoryId"
               class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
             >
@@ -133,10 +130,10 @@
                 ></div>
                 <div>
                   <p class="font-medium text-gray-900 dark:text-white">
-                    {{ item.categoryName }}
+                    {{ item.categoryName || 'Categoria sem nome' }}
                   </p>
                   <p class="text-sm text-gray-500 dark:text-gray-400">
-                    {{ item.transactionCount }} transação(ões)
+                    {{ item.transactionCount || 0 }} transação(ões)
                   </p>
                 </div>
               </div>
@@ -154,7 +151,7 @@
       </Card>
 
       <!-- Expense Details -->
-      <Card v-if="data.expenseDetails.length > 0">
+      <Card v-if="props.data.expenseDetails.length > 0">
         <div class="p-6">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Despesas por Categoria
@@ -162,7 +159,7 @@
 
           <div class="space-y-4">
             <div
-              v-for="item in data.expenseDetails"
+              v-for="item in props.data.expenseDetails"
               :key="item.categoryId"
               class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
             >
@@ -173,10 +170,10 @@
                 ></div>
                 <div>
                   <p class="font-medium text-gray-900 dark:text-white">
-                    {{ item.categoryName }}
+                    {{ item.categoryName || 'Categoria sem nome' }}
                   </p>
                   <p class="text-sm text-gray-500 dark:text-gray-400">
-                    {{ item.transactionCount }} transação(ões)
+                    {{ item.transactionCount || 0 }} transação(ões)
                   </p>
                 </div>
               </div>
@@ -195,7 +192,7 @@
 
       <!-- Empty State -->
       <Card
-        v-if="data.incomeDetails.length === 0 && data.expenseDetails.length === 0"
+        v-if="props.data.incomeDetails.length === 0 && props.data.expenseDetails.length === 0"
       >
         <div class="p-12 text-center">
           <Icon
@@ -217,28 +214,37 @@
 <script setup lang="ts">
 import type { MonthlyReport } from '~/types';
 
-const { fetchMonthlyReport, formatCurrency, generateChartColors } = useReports();
+const { formatCurrency } = useReports();
 
-// State
-const selectedYear = ref(new Date().getFullYear());
-const selectedMonth = ref(new Date().getMonth() + 1);
+// Props
+interface Props {
+  data?: MonthlyReport | null;
+  pending?: boolean;
+  error?: string | null;
+}
 
-// Fetch data
-const { data, pending, error, refresh } = await useAsyncData(
-  'monthly-report',
-  () => fetchMonthlyReport(selectedYear.value, selectedMonth.value),
-  {
-    watch: [selectedYear, selectedMonth]
-  }
-);
+const props = withDefaults(defineProps<Props>(), {
+  data: null,
+  pending: false,
+  error: null
+});
+
+// Emits
+const emit = defineEmits<{
+  refresh: [];
+}>();
 
 // Methods
-const handleFilterChange = (filter: { year: number; month: number }) => {
-  selectedYear.value = filter.year;
-  selectedMonth.value = filter.month;
+const handleRefresh = () => {
+  emit('refresh');
 };
 
-const generateColor = (seed: string): string => {
+const generateColor = (seed: string | undefined | null): string => {
+  // Handle undefined, null, or empty string
+  if (!seed || typeof seed !== 'string') {
+    return '#6B7280'; // Default gray color
+  }
+
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     hash = seed.charCodeAt(i) + ((hash << 5) - hash);

@@ -34,8 +34,8 @@
         :class="{ 'border-error-300': errors.limit_amount }"
         :disabled="isLoading"
         required
-        step="0.01"
-        min="0.01"
+        :step="0.01"
+        :min="0.01"
       />
       <p
         v-if="errors.limit_amount"

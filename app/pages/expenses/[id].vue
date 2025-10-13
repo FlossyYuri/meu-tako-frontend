@@ -1,7 +1,10 @@
 <template>
   <div class="max-w-2xl mx-auto">
     <div class="mb-6">
-      <NuxtLink to="/expenses" class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+      <NuxtLink
+        to="/expenses"
+        class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+      >
         <Icon name="lucide:arrow-left" class="w-4 h-4 mr-1" />
         Voltar para despesas
       </NuxtLink>
@@ -11,47 +14,106 @@
       <template #header>
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Despesa</h1>
-            <p class="text-sm text-gray-600 dark:text-gray-400">{{ expense.description || 'Sem descrição' }}</p>
+            <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+              Despesa
+            </h1>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              {{ expense.description || 'Sem descrição' }}
+            </p>
           </div>
-          <Badge :variant="expense.paid ? 'success' : 'warning'">{{ expense.paid ? 'Pago' : 'Pendente' }}</Badge>
+          <Badge
+            :variant="expense.paid ? 'success' : 'warning'"
+            >{{ expense.paid ? 'Pago' : 'Pendente' }}</Badge
+          >
         </div>
       </template>
 
       <form class="space-y-6" @submit.prevent="onSave">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <Input v-model="form.amount" type="number" label="Valor" :error="errors.amount" required step="0.01" min="0.01" />
+            <Input
+              v-model="form.amount"
+              type="number"
+              label="Valor"
+              :error="errors.amount"
+              required
+              :step="0.01"
+              :min="0.01"
+            />
           </div>
           <div>
-            <Input v-model="form.date" type="date" label="Data" :error="errors.date" required />
+            <Input
+              v-model="form.date"
+              type="date"
+              label="Data"
+              :error="errors.date"
+              required
+            />
           </div>
         </div>
 
         <div>
-          <Input v-model="form.description" type="text" label="Descrição" :error="errors.description" />
+          <Input
+            v-model="form.description"
+            type="text"
+            label="Descrição"
+            :error="errors.description"
+          />
         </div>
 
         <div>
           <label class="label">Categoria</label>
-          <select v-model="form.expense_category_id" class="input" :class="{ 'border-error-300': errors.expense_category_id }">
-            <option v-for="c in categoriesStore.expenseCategories" :key="c.category_id" :value="c.category_id">
+          <select
+            v-model="form.expense_category_id"
+            class="input"
+            :class="{ 'border-error-300': errors.expense_category_id }"
+          >
+            <option
+              v-for="c in categoriesStore.expenseCategories"
+              :key="c.category_id"
+              :value="c.category_id"
+            >
               {{ c.name }}
             </option>
           </select>
-          <p v-if="errors.expense_category_id" class="text-sm text-error-600 dark:text-error-400 mt-1">{{ errors.expense_category_id }}</p>
+          <p
+            v-if="errors.expense_category_id"
+            class="text-sm text-error-600 dark:text-error-400 mt-1"
+          >
+            {{ errors.expense_category_id }}
+          </p>
         </div>
 
         <div class="flex items-center">
-          <input id="paid" v-model="form.paid" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" />
-          <label for="paid" class="ml-2 text-sm text-gray-900 dark:text-gray-300">Pago</label>
+          <input
+            id="paid"
+            v-model="form.paid"
+            type="checkbox"
+            class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+          />
+          <label
+            for="paid"
+            class="ml-2 text-sm text-gray-900 dark:text-gray-300"
+            >Pago</label
+          >
         </div>
 
         <div class="flex flex-wrap gap-3">
-          <Button type="submit" variant="primary" :loading="transactionsStore.isLoading" :disabled="!isFormValid" icon="lucide:save">
+          <Button
+            type="submit"
+            variant="primary"
+            :loading="transactionsStore.isLoading"
+            :disabled="!isFormValid"
+            icon="lucide:save"
+          >
             Salvar alterações
           </Button>
-          <Button v-if="!expense.paid" variant="success" @click="onMarkPaid" icon="lucide:check">
+          <Button
+            v-if="!expense.paid"
+            variant="success"
+            @click="onMarkPaid"
+            icon="lucide:check"
+          >
             Marcar como pago
           </Button>
           <Button variant="error" @click="onDelete" icon="lucide:trash-2">
@@ -60,13 +122,19 @@
         </div>
 
         <div v-if="transactionsStore.error" class="text-center">
-          <p class="text-sm text-error-600 dark:text-error-400">{{ transactionsStore.error }}</p>
+          <p class="text-sm text-error-600 dark:text-error-400">
+            {{ transactionsStore.error }}
+          </p>
         </div>
       </form>
 
       <template #footer>
         <div class="text-sm text-gray-500 dark:text-gray-400">
-          Carteira: <span class="font-medium text-gray-700 dark:text-gray-200">{{ walletName }}</span>
+          Carteira:
+          <span
+            class="font-medium text-gray-700 dark:text-gray-200"
+            >{{ walletName }}</span
+          >
         </div>
       </template>
     </Card>

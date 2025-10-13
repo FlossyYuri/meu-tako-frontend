@@ -1,27 +1,20 @@
-import type { ThemeMode } from '~/stores/theme';
-
 export const useTheme = () => {
   const themeStore = useThemeStore();
 
-  // Inicializa o tema na primeira execução
-  if (process.client && !themeStore.mode) {
-    themeStore.initializeTheme();
-  }
+  // Ensure theme is applied consistently
+  const applyTheme = () => {
+    if (process.client) {
+      themeStore.updateTheme();
+    }
+  };
+
+  // Initialize theme on mount
+  onMounted(() => {
+    applyTheme();
+  });
 
   return {
-    // Estado reativo da store
-    mode: themeStore.mode,
-    isDark: themeStore.isDark,
-    currentMode: themeStore.currentMode,
-    isDarkMode: themeStore.isDarkMode,
-
-    // Ações da store
-    setTheme: themeStore.setTheme,
-    toggle: themeStore.toggleTheme,
-    updateTheme: themeStore.updateTheme,
-    initializeTheme: themeStore.initializeTheme,
-
-    // Compatibilidade com código existente
-    effective: computed(() => (themeStore.isDark ? 'dark' : 'light')),
+    applyTheme,
+    themeStore,
   };
 };

@@ -60,8 +60,8 @@
             placeholder="0,00"
             :error="errors.amount"
             required
-            step="0.01"
-            min="0.01"
+            :step="0.01"
+            :min="0.01"
           />
         </div>
 
@@ -110,7 +110,12 @@
                 {{ category.name }}
               </option>
             </select>
-            <Button type="button" variant="outline" icon="lucide:plus" @click="openNewCategory">
+            <Button
+              type="button"
+              variant="outline"
+              icon="lucide:plus"
+              @click="openNewCategory"
+            >
               Nova
             </Button>
           </div>

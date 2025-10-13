@@ -11,8 +11,8 @@
           v-model="form.amount"
           type="number"
           label="Valor do limite"
-          step="0.01"
-          min="0.01"
+          :step="0.01"
+          :min="0.01"
           required
           :error="errors.amount"
         />

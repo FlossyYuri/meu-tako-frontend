@@ -34,14 +34,18 @@
 
       <div class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          <div
+            class="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+          >
             <p class="text-sm text-gray-500 dark:text-gray-400">Valor</p>
             <p class="text-2xl font-bold" :class="amountClass">
               {{ amountPrefix }}{{ formatCurrency(tx.amount) }}
             </p>
           </div>
 
-          <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          <div
+            class="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+          >
             <p class="text-sm text-gray-500 dark:text-gray-400">Carteira</p>
             <p class="text-lg font-medium text-gray-900 dark:text-white">
               {{ walletName }}
@@ -140,6 +144,16 @@ const typeLabel = computed(() => {
 })
 
 const title = computed(() => tx.value?.description || 'Transação')
+
+const badgeVariant = computed(() => {
+  if (!tx.value) return 'default'
+  switch (tx.value.type) {
+    case 'income': return 'success'
+    case 'expense': return 'error'
+    case 'transfer': return 'primary'
+    default: return 'default'
+  }
+})
 
 onMounted(async () => {
   try {

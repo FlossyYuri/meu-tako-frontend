@@ -28,8 +28,8 @@
         placeholder="0,00"
         :error="errors.target_amount"
         required
-        step="0.01"
-        min="0.01"
+        :step="0.01"
+        :min="0.01"
       />
     </div>
 
@@ -52,10 +52,7 @@
 
     <div>
       <label class="label">Categoria de Despesa (opcional)</label>
-      <select
-        v-model="form.expense_category_id"
-        class="input"
-      >
+      <select v-model="form.expense_category_id" class="input">
         <option value="">Sem categoria</option>
         <option
           v-for="c in categoriesStore.expenseCategories"
@@ -68,7 +65,12 @@
     </div>
 
     <div class="flex gap-3">
-      <Button v-if="showCancel" type="button" variant="outline" @click="emit('cancel')">
+      <Button
+        v-if="showCancel"
+        type="button"
+        variant="outline"
+        @click="emit('cancel')"
+      >
         Cancelar
       </Button>
       <Button

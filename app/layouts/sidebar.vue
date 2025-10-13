@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <!-- Mobile sidebar overlay -->
     <div
-      v-if="sidebarOpen"
+      v-if="isClient && sidebarOpen"
       class="fixed inset-0 z-40 lg:hidden"
       @click="sidebarOpen = false"
     >
@@ -11,7 +11,7 @@
 
     <!-- Mobile sidebar -->
     <div
-      v-if="sidebarOpen"
+      v-if="isClient && sidebarOpen"
       class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg lg:hidden"
     >
       <SidebarNav :is-mobile="true" @close="sidebarOpen = false" />
@@ -63,7 +63,7 @@
               </button>
 
               <div
-                v-if="userMenuOpen"
+                v-if="isClient && userMenuOpen"
                 class="absolute right-0 mt-1 w-44 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50"
               >
                 <div class="py-1">
@@ -108,6 +108,12 @@ const authStore = useAuthStore()
 
 const sidebarOpen = ref(false)
 const userMenuOpen = ref(false)
+const isClient = ref(false)
+
+// Ensure we're on the client before showing interactive elements
+onMounted(() => {
+  isClient.value = true
+})
 
 const logout = async () => {
   try {

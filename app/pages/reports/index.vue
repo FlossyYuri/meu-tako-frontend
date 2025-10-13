@@ -31,7 +31,13 @@
     <!-- Report Content -->
     <div class="space-y-6">
       <!-- Monthly Report -->
-      <MonthlyReport v-if="activeTab === 'monthly'" />
+      <MonthlyReport
+        v-if="activeTab === 'monthly'"
+        :data="monthlyData"
+        :pending="monthlyPending"
+        :error="monthlyError"
+        @refresh="refreshMonthlyReport"
+      />
 
       <!-- Category Report -->
       <CategoryReport v-if="activeTab === 'category'" />
@@ -47,8 +53,26 @@ definePageMeta({
   middleware: 'auth'
 });
 
+const { fetchMonthlyReport } = useReports();
+
 // State
 const activeTab = ref('monthly');
+const selectedYear = ref(new Date().getFullYear());
+const selectedMonth = ref(new Date().getMonth() + 1);
+
+// Fetch monthly report data
+const {
+  data: monthlyData,
+  pending: monthlyPending,
+  error: monthlyError,
+  refresh: refreshMonthlyReport
+} = await useAsyncData(
+  'monthly-report',
+  () => fetchMonthlyReport(selectedYear.value, selectedMonth.value),
+  {
+    watch: [selectedYear, selectedMonth]
+  }
+);
 
 // Tabs configuration
 const tabs = [

@@ -90,10 +90,14 @@ export const useThemeStore = defineStore('theme', () => {
 
       mediaQuery.addEventListener('change', handleSystemThemeChange);
 
-      // Cleanup no unmount
-      onUnmounted(() => {
+      // Store the cleanup function for later use
+      // This will be called when the store is destroyed
+      const cleanup = () => {
         mediaQuery.removeEventListener('change', handleSystemThemeChange);
-      });
+      };
+
+      // Return cleanup function instead of using onUnmounted
+      return cleanup;
     }
   };
 

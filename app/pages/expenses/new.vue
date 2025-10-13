@@ -1,7 +1,10 @@
 <template>
   <div class="max-w-2xl mx-auto">
     <div class="mb-6">
-      <NuxtLink to="/expenses" class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+      <NuxtLink
+        to="/expenses"
+        class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+      >
         <Icon name="lucide:arrow-left" class="w-4 h-4 mr-1" />
         Voltar para despesas
       </NuxtLink>
@@ -9,53 +12,119 @@
 
     <Card>
       <template #header>
-        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Nova Despesa</h1>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Registre uma nova despesa</p>
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+          Nova Despesa
+        </h1>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+          Registre uma nova despesa
+        </p>
       </template>
 
       <form class="space-y-6" @submit.prevent="handleSubmit">
         <div>
-          <Input v-model="form.amount" type="number" label="Valor" placeholder="0,00" :error="errors.amount" required step="0.01" min="0.01" />
+          <Input
+            v-model="form.amount"
+            type="number"
+            label="Valor"
+            placeholder="0,00"
+            :error="errors.amount"
+            required
+            :step="0.01"
+            :min="0.01"
+          />
         </div>
 
         <div>
-          <Input v-model="form.description" type="text" label="Descrição" placeholder="Ex: Supermercado" :error="errors.description" />
+          <Input
+            v-model="form.description"
+            type="text"
+            label="Descrição"
+            placeholder="Ex: Supermercado"
+            :error="errors.description"
+          />
         </div>
 
         <div>
-          <Input v-model="form.date" type="date" label="Data" :error="errors.date" required />
+          <Input
+            v-model="form.date"
+            type="date"
+            label="Data"
+            :error="errors.date"
+            required
+          />
         </div>
 
         <div>
           <label class="label">Categoria</label>
           <div class="flex gap-2">
-            <select v-model="form.expense_category_id" class="input" :class="{ 'border-error-300': errors.expense_category_id }">
+            <select
+              v-model="form.expense_category_id"
+              class="input"
+              :class="{ 'border-error-300': errors.expense_category_id }"
+            >
               <option value="">Selecione uma categoria</option>
-              <option v-for="c in categoriesStore.expenseCategories" :key="c.category_id" :value="c.category_id">
+              <option
+                v-for="c in categoriesStore.expenseCategories"
+                :key="c.category_id"
+                :value="c.category_id"
+              >
                 {{ c.name }}
               </option>
             </select>
-            <Button type="button" variant="outline" icon="lucide:plus" @click="showCategoryModal = true">
+            <Button
+              type="button"
+              variant="outline"
+              icon="lucide:plus"
+              @click="showCategoryModal = true"
+            >
               Nova
             </Button>
           </div>
-          <p v-if="errors.expense_category_id" class="text-sm text-error-600 dark:text-error-400 mt-1">{{ errors.expense_category_id }}</p>
+          <p
+            v-if="errors.expense_category_id"
+            class="text-sm text-error-600 dark:text-error-400 mt-1"
+          >
+            {{ errors.expense_category_id }}
+          </p>
         </div>
 
         <div class="flex items-center">
-          <input id="paid" v-model="form.paid" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" />
-          <label for="paid" class="ml-2 text-sm text-gray-900 dark:text-gray-300">Já pago</label>
+          <input
+            id="paid"
+            v-model="form.paid"
+            type="checkbox"
+            class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+          />
+          <label
+            for="paid"
+            class="ml-2 text-sm text-gray-900 dark:text-gray-300"
+            >Já pago</label
+          >
         </div>
 
         <div class="flex space-x-3">
-          <Button type="button" variant="outline" full-width @click="navigateTo('/expenses')">Cancelar</Button>
-          <Button type="submit" variant="error" :loading="transactionsStore.isLoading" :disabled="!isFormValid" full-width>
+          <Button
+            type="button"
+            variant="outline"
+            full-width
+            @click="navigateTo('/expenses')"
+            >Cancelar</Button
+          >
+          <Button
+            type="submit"
+            variant="error"
+            :loading="transactionsStore.isLoading"
+            :disabled="!isFormValid"
+            full-width
+          >
             Adicionar Despesa
           </Button>
         </div>
 
         <div v-if="transactionsStore.error" class="text-center">
-          <p class="text-sm text-error-600 dark:text-error-400">{{ transactionsStore.error }}</p>
+          <p class="text-sm text-error-600 dark:text-error-400">
+            {{ transactionsStore.error }}
+          </p>
         </div>
       </form>
     </Card>
