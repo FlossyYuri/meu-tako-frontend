@@ -3,12 +3,6 @@
     <!-- Header -->
     <PageHeader title="Transações" subtitle="Gerencie suas receitas, despesas e transferências">
       <template #actions>
-        <Button to="/transactions/new?type=income" variant="success" icon="lucide:plus">
-          Receita
-        </Button>
-        <Button to="/transactions/new?type=expense" variant="error" icon="lucide:minus">
-          Despesa
-        </Button>
         <Button to="/transactions/transfer" variant="outline" icon="lucide:arrow-right-left">
           Transferir
         </Button>

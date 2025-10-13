@@ -28,12 +28,14 @@ export const useApi = () => {
     return 'Ocorreu um erro inesperado';
   };
 
-  const formatCurrency = (amount: number, currency = 'MZN'): string =>
-    new Intl.NumberFormat('pt-MZ', {
-      style: 'currency',
-      currency,
+  // Formatação monetária: sempre prefixar com 'MT'
+  const formatCurrency = (amount: number, _currency: string = 'MZN'): string => {
+    const formatted = new Intl.NumberFormat('pt-MZ', {
       minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(amount);
+    return `MT ${formatted}`;
+  };
 
   // Helpers para datas
   const isDateOnly = (value: string): boolean =>
