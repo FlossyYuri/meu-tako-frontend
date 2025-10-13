@@ -46,6 +46,8 @@
 </template>
 
 <script setup lang="ts">
+import GoalCard from '~/components/feature/goals/GoalCard.vue'
+
 definePageMeta({
   middleware: 'auth'
 })
