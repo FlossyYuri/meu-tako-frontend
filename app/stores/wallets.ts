@@ -1,6 +1,25 @@
 import { defineStore } from 'pinia';
 import type { Wallet, CreateWalletRequest, UpdateWalletRequest } from '~/types';
 
+type AnyWallet = Partial<Wallet> & Record<string, any>;
+
+const toNumber = (v: unknown): number => {
+  if (typeof v === 'number') return Number.isFinite(v) ? v : 0;
+  const n = parseFloat(String(v ?? '0').replace(',', '.'));
+  return Number.isFinite(n) ? n : 0;
+};
+
+const normalizeWallet = (raw: AnyWallet): Wallet => {
+  return {
+    wallet_id: String(raw.wallet_id ?? raw.id ?? ''),
+    wallet_name: String(raw.wallet_name ?? raw.name ?? ''),
+    balance: toNumber(raw.balance),
+    is_default: Boolean(raw.is_default),
+    created_at: String(raw.created_at ?? raw.createdAt ?? ''),
+    updated_at: String(raw.updated_at ?? raw.updatedAt ?? ''),
+  };
+};
+
 export const useWalletsStore = defineStore('wallets', () => {
   // State
   const wallets = ref<Wallet[]>([]);
@@ -14,7 +33,7 @@ export const useWalletsStore = defineStore('wallets', () => {
   );
 
   const totalBalance = computed(() =>
-    wallets.value.reduce((total, wallet) => total + wallet.balance, 0)
+    wallets.value.reduce((total, wallet) => total + toNumber(wallet.balance), 0)
   );
 
   const walletOptions = computed(() =>
@@ -31,21 +50,21 @@ export const useWalletsStore = defineStore('wallets', () => {
       isLoading.value = true;
       error.value = null;
 
-      const response = await $fetch<Wallet[]>('/wallets', {
+      const response = await $fetch<any[]>('/wallets', {
         headers: {
           Authorization: `Bearer ${useAuthStore().token}`,
         },
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      wallets.value = response;
+      wallets.value = (response || []).map(normalizeWallet);
 
       // Set current wallet to default if not set
-      if (!currentWallet.value && response.length > 0) {
+      if (!currentWallet.value && wallets.value.length > 0) {
         currentWallet.value = defaultWallet.value;
       }
 
-      return response;
+      return wallets.value;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao carregar carteiras';
       throw err;
@@ -59,22 +78,24 @@ export const useWalletsStore = defineStore('wallets', () => {
       isLoading.value = true;
       error.value = null;
 
-      const response = await $fetch<Wallet>(`/wallets/${walletId}`, {
+      const response = await $fetch<any>(`/wallets/${walletId}`, {
         headers: {
           Authorization: `Bearer ${useAuthStore().token}`,
         },
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
+      const normalized = normalizeWallet(response);
+
       const idx = wallets.value.findIndex(w => w.wallet_id === walletId);
-      if (idx !== -1) wallets.value[idx] = response;
-      else wallets.value.push(response);
+      if (idx !== -1) wallets.value[idx] = normalized;
+      else wallets.value.push(normalized);
 
       if (!currentWallet.value || currentWallet.value.wallet_id === walletId) {
-        currentWallet.value = response;
+        currentWallet.value = normalized;
       }
 
-      return response;
+      return normalized;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao obter carteira';
       throw err;
@@ -88,7 +109,7 @@ export const useWalletsStore = defineStore('wallets', () => {
       isLoading.value = true;
       error.value = null;
 
-      const response = await $fetch<Wallet>('/wallets', {
+      const response = await $fetch<any>('/wallets', {
         method: 'POST',
         body: walletData,
         headers: {
@@ -97,14 +118,15 @@ export const useWalletsStore = defineStore('wallets', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      wallets.value.push(response);
+      const normalized = normalizeWallet(response);
+      wallets.value.push(normalized);
 
       // If this is the first wallet, set it as current
       if (wallets.value.length === 1) {
-        currentWallet.value = response;
+        currentWallet.value = normalized;
       }
 
-      return response;
+      return normalized;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao criar carteira';
       throw err;
@@ -121,7 +143,7 @@ export const useWalletsStore = defineStore('wallets', () => {
       isLoading.value = true;
       error.value = null;
 
-      const response = await $fetch<Wallet>(`/wallets/${walletId}`, {
+      const response = await $fetch<any>(`/wallets/${walletId}`, {
         method: 'PUT',
         body: walletData,
         headers: {
@@ -130,17 +152,19 @@ export const useWalletsStore = defineStore('wallets', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
+      const normalized = normalizeWallet(response);
+
       const index = wallets.value.findIndex((w) => w.wallet_id === walletId);
       if (index !== -1) {
-        wallets.value[index] = response;
+        wallets.value[index] = normalized;
       }
 
       // Update current wallet if it's the one being updated
       if (currentWallet.value?.wallet_id === walletId) {
-        currentWallet.value = response;
+        currentWallet.value = normalized;
       }
 
-      return response;
+      return normalized;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao atualizar carteira';
       throw err;
@@ -184,7 +208,7 @@ export const useWalletsStore = defineStore('wallets', () => {
       isLoading.value = true;
       error.value = null;
 
-      const response = await $fetch<Wallet>(`/wallets/${walletId}/default`, {
+      const response = await $fetch<any>(`/wallets/${walletId}/default`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${useAuthStore().token}`,
@@ -192,23 +216,25 @@ export const useWalletsStore = defineStore('wallets', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
+      const normalized = normalizeWallet(response);
+
       // Update all wallets to remove default flag
       wallets.value = wallets.value.map((w) => ({ ...w, is_default: false }));
 
       // Set the new default wallet
       const index = wallets.value.findIndex((w) => w.wallet_id === walletId);
       if (index !== -1) {
-        wallets.value[index] = response;
+        wallets.value[index] = normalized;
       } else {
-        wallets.value.push(response);
+        wallets.value.push(normalized);
       }
 
       // Update current wallet if matches
       if (currentWallet.value?.wallet_id === walletId) {
-        currentWallet.value = response;
+        currentWallet.value = normalized;
       }
 
-      return response;
+      return normalized;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao definir carteira padrão';
       throw err;
@@ -218,7 +244,7 @@ export const useWalletsStore = defineStore('wallets', () => {
   };
 
   const setCurrentWallet = (wallet: Wallet | null) => {
-    currentWallet.value = wallet;
+    currentWallet.value = wallet ? normalizeWallet(wallet) : null;
   };
 
   const getWalletById = (walletId: string) => {
@@ -228,12 +254,12 @@ export const useWalletsStore = defineStore('wallets', () => {
   const updateWalletBalance = (walletId: string, newBalance: number) => {
     const wallet = wallets.value.find((w) => w.wallet_id === walletId);
     if (wallet) {
-      wallet.balance = newBalance;
+      wallet.balance = toNumber(newBalance);
     }
 
     // Update current wallet if it's the one being updated
     if (currentWallet.value?.wallet_id === walletId) {
-      currentWallet.value.balance = newBalance;
+      currentWallet.value.balance = toNumber(newBalance);
     }
   };
 
