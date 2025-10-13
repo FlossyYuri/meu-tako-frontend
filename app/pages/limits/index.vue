@@ -103,6 +103,7 @@
         :limit="limit"
         :status="limitStatuses[limit.limit_id]"
         :category="getCategoryById(limit.expense_category_id)"
+        @view="onView"
         @edit="onEdit"
         @delete="onDelete"
       />
@@ -213,13 +214,36 @@ const loadLimitStatuses = async () => {
       console.error(`Failed to load status for limit ${limit.limit_id}:`, err)
       // Set a default status object to prevent undefined errors
       limitStatuses.value[limit.limit_id] = {
-        limit_amount: limit.limit_amount,
-        used: 0,
-        remaining: limit.limit_amount,
-        percentage: 0
+        limit: {
+          limit_id: limit.limit_id,
+          user_id: limit.user_id,
+          expense_category_id: limit.expense_category_id,
+          limit_amount: limit.limit_amount.toString(),
+          start_date: limit.start_date,
+          end_date: limit.end_date,
+          active: limit.is_active,
+          created_at: limit.created_at,
+          updated_at: limit.updated_at,
+          category: {
+            expense_category_id: limit.expense_category_id,
+            name: getCategoryById(limit.expense_category_id)?.name || 'Categoria',
+            description: '',
+            priority: 0,
+            active: true
+          }
+        },
+        totalSpent: 0,
+        remainingAmount: limit.limit_amount,
+        percentageUsed: 0,
+        isExceeded: false,
+        isNearLimit: false
       }
     }
   }
+}
+
+const onView = (limit: Limit) => {
+  navigateTo(`/limits/${limit.limit_id}`)
 }
 
 const onEdit = (limit: Limit) => {

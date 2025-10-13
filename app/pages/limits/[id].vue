@@ -32,19 +32,32 @@
           <div class="flex items-center justify-between mb-2">
             <span class="text-sm text-gray-600 dark:text-gray-400">Uso</span>
             <span class="text-sm font-medium text-gray-900 dark:text-white">
-              {{ formatCurrency(status?.used || 0) }} /
-              {{ formatCurrency(status?.limit_amount || 0) }}
-              ({{ status?.percentage || 0 }}%)
+              {{ formatCurrency(status?.totalSpent || 0) }} /
+              {{ formatCurrency(parseFloat(status?.limit?.limit_amount || '0')) }}
+              ({{ status?.percentageUsed || 0 }}%)
             </span>
           </div>
           <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
-              class="bg-primary-600 h-2 rounded-full transition-all duration-300"
-              :style="{ width: `${Math.min(100, status?.percentage || 0)}%` }"
+              class="h-2 rounded-full transition-all duration-300"
+              :class="getProgressBarClass(status)"
+              :style="{ width: `${Math.min(100, status?.percentageUsed || 0)}%` }"
             />
           </div>
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-            Restante: {{ formatCurrency(status?.remaining || 0) }}
+            Restante: {{ formatCurrency(status?.remainingAmount || 0) }}
+            <span
+              v-if="status?.isExceeded"
+              class="text-error-500 font-semibold ml-1"
+            >
+              (EXCEDIDO)
+            </span>
+            <span
+              v-else-if="status?.isNearLimit"
+              class="text-warning-500 font-semibold ml-1"
+            >
+              (PRÓXIMO DO LIMITE)
+            </span>
           </p>
         </div>
 
@@ -118,7 +131,15 @@ const categoryName = computed(() =>
   categoriesStore.getExpenseCategoryById(limit.value?.expense_category_id || '')?.name || 'Categoria'
 )
 
-const statusText = computed(() => `${status.value?.percentage || 0}% usado`)
+const statusText = computed(() => `${status.value?.percentageUsed || 0}% usado`)
+
+const getProgressBarClass = (status: LimitStatus | null) => {
+  if (!status) return 'bg-primary-600'
+  if (status.isExceeded) return 'bg-error-500'
+  if (status.isNearLimit) return 'bg-warning-500'
+  if (status.percentageUsed >= 60) return 'bg-yellow-500'
+  return 'bg-primary-600'
+}
 
 const load = async () => {
   const data = await limitsStore.getLimitById(id)

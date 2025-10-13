@@ -8,8 +8,8 @@
         <Button
           variant="ghost"
           size="sm"
-          @click="$emit('refresh')"
           :disabled="isLoading"
+          @click="$emit('refresh')"
         >
           <Icon
             name="lucide:refresh-cw"
@@ -68,7 +68,7 @@
             <div
               class="bg-blue-600 h-2 rounded-full transition-all duration-300"
               :style="{ width: `${progressPercentage(goal)}%` }"
-            ></div>
+            />
           </div>
         </div>
 

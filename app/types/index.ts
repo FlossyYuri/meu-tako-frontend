@@ -225,10 +225,29 @@ export interface UpdateLimitRequest {
 }
 
 export interface LimitStatus {
-  limit_amount: number;
-  used: number;
-  remaining: number;
-  percentage: number;
+  limit: {
+    limit_id: string;
+    user_id: string;
+    expense_category_id: string;
+    limit_amount: string;
+    start_date: string;
+    end_date: string;
+    active: boolean;
+    created_at: string;
+    updated_at: string;
+    category: {
+      expense_category_id: string;
+      name: string;
+      description: string;
+      priority: number;
+      active: boolean;
+    };
+  };
+  totalSpent: number;
+  remainingAmount: number;
+  percentageUsed: number;
+  isExceeded: boolean;
+  isNearLimit: boolean;
 }
 
 // Dashboard types

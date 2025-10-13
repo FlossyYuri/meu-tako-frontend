@@ -1,6 +1,28 @@
 <template>
-  <Card class="hover:shadow-md transition-shadow duration-200">
-    <div class="flex items-start justify-between">
+  <Card class="hover:shadow-md transition-shadow duration-200 relative">
+    <!-- Floating Options Button -->
+    <div class="absolute top-4 right-4 z-10">
+      <ActionDropdown>
+        <ActionItem
+          label="Visualizar"
+          icon="lucide:eye"
+          @click="$emit('view', limit)"
+        />
+        <ActionItem
+          label="Editar"
+          icon="lucide:edit"
+          @click="$emit('edit', limit)"
+        />
+        <ActionItem
+          label="Excluir"
+          icon="lucide:trash-2"
+          variant="danger"
+          @click="$emit('delete', limit)"
+        />
+      </ActionDropdown>
+    </div>
+
+    <div class="flex items-start">
       <div class="flex-1">
         <div class="flex items-center gap-2 mb-2">
           <div
@@ -41,13 +63,25 @@
           <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
               class="h-2 rounded-full transition-all duration-300"
-              :class="getProgressBarClass(safeStatus.percentage)"
+              :class="getProgressBarClass(safeStatus)"
               :style="{ width: `${Math.min(100, safeStatus.percentage)}%` }"
             />
           </div>
           <div class="flex items-center justify-between mt-1">
             <span class="text-xs text-gray-500 dark:text-gray-400">
               {{ safeStatus.percentage.toFixed(1) }}% usado
+              <span
+                v-if="safeStatus.isExceeded"
+                class="text-error-500 font-semibold ml-1"
+              >
+                (EXCEDIDO)
+              </span>
+              <span
+                v-else-if="safeStatus.isNearLimit"
+                class="text-warning-500 font-semibold ml-1"
+              >
+                (PRÓXIMO DO LIMITE)
+              </span>
             </span>
             <span class="text-xs text-gray-500 dark:text-gray-400">
               Restante: {{ formatCurrency(safeStatus.remaining) }}
@@ -72,30 +106,6 @@
           </span>
         </div>
       </div>
-
-      <div class="flex items-center gap-2 ml-4">
-        <Button
-          :to="`/limits/${limit.limit_id}`"
-          size="sm"
-          variant="outline"
-          icon="lucide:eye"
-        >
-          Ver
-        </Button>
-        <ActionDropdown>
-          <ActionItem
-            label="Editar"
-            icon="lucide:edit"
-            @click="$emit('edit', limit)"
-          />
-          <ActionItem
-            label="Excluir"
-            icon="lucide:trash-2"
-            variant="danger"
-            @click="$emit('delete', limit)"
-          />
-        </ActionDropdown>
-      </div>
     </div>
   </Card>
 </template>
@@ -112,6 +122,7 @@ interface Props {
 }
 
 interface Emits {
+  view: [limit: Limit]
   edit: [limit: Limit]
   delete: [limit: Limit]
 }
@@ -125,17 +136,19 @@ const { formatCurrency, formatDisplayDate } = useApi()
 const safeStatus = computed(() => {
   if (!props.status) return null
   return {
-    limit_amount: props.status.limit_amount || 0,
-    used: props.status.used || 0,
-    remaining: props.status.remaining || 0,
-    percentage: props.status.percentage || 0
+    limit_amount: parseFloat(props.status.limit.limit_amount) || 0,
+    used: props.status.totalSpent || 0,
+    remaining: props.status.remainingAmount || 0,
+    percentage: props.status.percentageUsed || 0,
+    isExceeded: props.status.isExceeded || false,
+    isNearLimit: props.status.isNearLimit || false
   }
 })
 
-const getProgressBarClass = (percentage: number) => {
-  if (percentage >= 100) return 'bg-error-500'
-  if (percentage >= 80) return 'bg-warning-500'
-  if (percentage >= 60) return 'bg-yellow-500'
+const getProgressBarClass = (status: { isExceeded: boolean; isNearLimit: boolean; percentage: number }) => {
+  if (status.isExceeded) return 'bg-error-500'
+  if (status.isNearLimit) return 'bg-warning-500'
+  if (status.percentage >= 60) return 'bg-yellow-500'
   return 'bg-primary-500'
 }
 
