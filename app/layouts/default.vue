@@ -20,25 +20,7 @@
             </NuxtLink>
           </div>
 
-          <!-- Desktop Navigation -->
-          <nav class="hidden md:flex space-x-8">
-            <NuxtLink
-              v-for="item in navigation"
-              :key="item.name"
-              :to="item.href"
-              class="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-              :class="[
-                $route.path === item.href
-                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700'
-              ]"
-            >
-              <Icon :name="item.icon" class="w-4 h-4" />
-              <span>{{ item.name }}</span>
-            </NuxtLink>
-          </nav>
-
-          <!-- User Menu -->
+          <!-- Right actions -->
           <div class="flex items-center space-x-4">
             <!-- Theme Toggle -->
             <button
@@ -137,9 +119,9 @@
               </div>
             </ClientOnly>
 
-            <!-- Mobile Menu Button -->
+            <!-- Mobile Menu Button (mostra apenas em telas menores) -->
             <button
-              class="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 transition-colors duration-200"
+              class="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 transition-colors duration-200"
               @click="toggleMobileMenu"
             >
               <Icon name="lucide:menu" class="w-5 h-5" />
@@ -159,7 +141,7 @@
       >
         <div
           v-if="showMobileMenu"
-          class="md:hidden border-t border-gray-200 dark:border-gray-700"
+          class="lg:hidden border-t border-gray-200 dark:border-gray-700"
         >
           <div class="px-2 pt-2 pb-3 space-y-1">
             <NuxtLink
@@ -182,10 +164,20 @@
       </Transition>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <slot />
-    </main>
+    <!-- Content with Sidebar -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex gap-6">
+        <!-- Sidebar (lg+) -->
+        <div class="hidden lg:block w-64 flex-shrink-0">
+          <SidebarNav :items="navigation" />
+        </div>
+
+        <!-- Main Content -->
+        <main class="flex-1">
+          <slot />
+        </main>
+      </div>
+    </div>
 
     <!-- Footer -->
     <footer
@@ -204,7 +196,7 @@
 const authStore = useAuthStore()
 const { isDark, toggle: toggleTheme } = useTheme()
 
-// Navigation items
+// Navigation items (reutilizado para sidebar e mobile)
 const navigation = [
   { name: 'Dashboard', href: '/', icon: 'lucide:layout-dashboard' },
   { name: 'Transações', href: '/transactions', icon: 'lucide:credit-card' },
