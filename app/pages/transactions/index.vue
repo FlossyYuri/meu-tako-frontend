@@ -1,9 +1,16 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-4">
     <!-- Header -->
-    <PageHeader title="Transações" subtitle="Gerencie suas receitas, despesas e transferências">
+    <PageHeader
+      title="Transações"
+      subtitle="Gerencie suas receitas, despesas e transferências"
+    >
       <template #actions>
-        <Button to="/transactions/transfer" variant="outline" icon="lucide:arrow-right-left">
+        <Button
+          to="/transactions/transfer"
+          variant="outline"
+          icon="lucide:arrow-right-left"
+        >
           Transferir
         </Button>
       </template>
@@ -13,8 +20,8 @@
     <TransactionFilters v-model="filters" />
 
     <!-- Loading State -->
-    <div v-if="transactionsStore.isLoading" class="flex justify-center py-12">
-      <LoadingSpinner text="Carregando transações..." />
+    <div v-if="transactionsStore.isLoading">
+      <TransactionSkeleton :count="5" />
     </div>
 
     <!-- Transactions List -->
@@ -33,17 +40,37 @@
         Mostrando {{ startItem }} a {{ endItem }} de {{ totalItems }} transações
       </div>
 
-      <div class="flex space-x-2">
-        <Button variant="outline" size="sm" :disabled="currentPage === 1" @click="currentPage = 1">
+      <div class="flex space-x-1.5">
+        <Button
+          variant="outline"
+          size="sm"
+          :disabled="currentPage === 1"
+          @click="currentPage = 1"
+        >
           Primeira
         </Button>
-        <Button variant="outline" size="sm" :disabled="currentPage === 1" @click="currentPage--">
+        <Button
+          variant="outline"
+          size="sm"
+          :disabled="currentPage === 1"
+          @click="currentPage--"
+        >
           Anterior
         </Button>
-        <Button variant="outline" size="sm" :disabled="currentPage === totalPages" @click="currentPage++">
+        <Button
+          variant="outline"
+          size="sm"
+          :disabled="currentPage === totalPages"
+          @click="currentPage++"
+        >
           Próxima
         </Button>
-        <Button variant="outline" size="sm" :disabled="currentPage === totalPages" @click="currentPage = totalPages">
+        <Button
+          variant="outline"
+          size="sm"
+          :disabled="currentPage === totalPages"
+          @click="currentPage = totalPages"
+        >
           Última
         </Button>
       </div>
@@ -54,6 +81,7 @@
 <script setup lang="ts">
 import TransactionFilters from '~/components/feature/TransactionFilters.vue'
 import TransactionList from '~/components/feature/TransactionList.vue'
+import TransactionSkeleton from '~/components/ui/TransactionSkeleton.vue'
 
 definePageMeta({
   middleware: 'auth'

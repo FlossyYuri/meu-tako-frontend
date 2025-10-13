@@ -1,9 +1,5 @@
 <template>
-  <div
-    :class="containerClasses"
-    :style="styleVars"
-    aria-hidden="true"
-  />
+  <div :class="containerClasses" :style="styleVars" aria-hidden="true" />
 </template>
 
 <script setup lang="ts">
@@ -13,12 +9,16 @@ interface Props {
   rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full'
   circle?: boolean
   className?: string
+  lines?: number
+  variant?: 'default' | 'card' | 'text' | 'avatar'
 }
 
 const props = withDefaults(defineProps<Props>(), {
   rounded: 'md',
   circle: false,
-  className: ''
+  className: '',
+  lines: 1,
+  variant: 'default'
 })
 
 const roundedMap = {
@@ -31,8 +31,26 @@ const roundedMap = {
 } as const
 
 const containerClasses = computed(() => {
+  const baseClasses = 'skeleton animate-pulse bg-gray-200 dark:bg-gray-700'
+
+  if (props.variant === 'card') {
+    return [
+      baseClasses,
+      'p-4 border border-gray-200 dark:border-gray-600',
+      props.className
+    ].join(' ')
+  }
+
+  if (props.variant === 'avatar') {
+    return [
+      baseClasses,
+      'rounded-full',
+      props.className
+    ].join(' ')
+  }
+
   return [
-    'skeleton',
+    baseClasses,
     props.circle ? 'rounded-full' : roundedMap[props.rounded],
     props.className
   ].join(' ')

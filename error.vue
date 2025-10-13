@@ -23,20 +23,17 @@
       >
         <div class="mb-6">
           <Icon
-            name="lucide:alert-circle"
+            :name="errorIcon"
             class="w-16 h-16 text-gray-400 mx-auto mb-4"
           />
           <h1 class="text-6xl font-bold text-gray-900 dark:text-white mb-2">
             {{ error.statusCode }}
           </h1>
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            {{ error.statusCode === 404 ? 'Página não encontrada' : 'Algo deu errado' }}
+            {{ errorTitle }}
           </h2>
           <p class="text-gray-600 dark:text-gray-400">
-            {{ error.statusCode === 404 
-              ? 'A página que você está procurando não existe.' 
-              : 'Ocorreu um erro inesperado. Tente novamente mais tarde.'
-            }}
+            {{ errorMessage }}
           </p>
         </div>
 
@@ -66,6 +63,45 @@ interface ErrorProps {
 }
 
 const props = defineProps<ErrorProps>()
+
+const errorIcon = computed(() => {
+  switch (props.statusCode) {
+    case 404:
+      return 'lucide:search'
+    case 500:
+      return 'lucide:server'
+    case 403:
+      return 'lucide:shield-alert'
+    default:
+      return 'lucide:alert-circle'
+  }
+})
+
+const errorTitle = computed(() => {
+  switch (props.statusCode) {
+    case 404:
+      return 'Página não encontrada'
+    case 500:
+      return 'Erro interno do servidor'
+    case 403:
+      return 'Acesso negado'
+    default:
+      return 'Algo deu errado'
+  }
+})
+
+const errorMessage = computed(() => {
+  switch (props.statusCode) {
+    case 404:
+      return 'A página que você está procurando não existe ou foi movida.'
+    case 500:
+      return 'Ocorreu um erro interno. Nossa equipe foi notificada.'
+    case 403:
+      return 'Você não tem permissão para acessar esta página.'
+    default:
+      return 'Ocorreu um erro inesperado. Tente novamente mais tarde.'
+  }
+})
 
 const handleError = () => {
   clearError({ redirect: '/' })

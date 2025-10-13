@@ -1,19 +1,17 @@
 <template>
-  <component
-    :is="wrapperTag"
-    :class="containerClasses"
-    @click="handleClick"
-  >
+  <component :is="wrapperTag" :class="containerClasses" @click="handleClick">
     <div class="flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="p-2 rounded-lg" :class="iconBgClass">
-          <Icon :name="iconName" class="w-5 h-5" />
+      <div class="flex items-center space-x-2.5">
+        <div class="p-1.5 rounded-lg" :class="iconBgClass">
+          <Icon :name="iconName" class="w-4 h-4" />
         </div>
         <div>
           <p class="font-medium text-gray-900 dark:text-white">
             {{ titleText }}
           </p>
-          <div class="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+          <div
+            class="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400"
+          >
             <span>{{ formattedDate }}</span>
             <span v-if="walletLabel">•</span>
             <span v-if="walletLabel">{{ walletLabel }}</span>
@@ -23,7 +21,11 @@
             </template>
             <template v-if="statusLabel">
               <span>•</span>
-              <Badge :variant="statusVariant" size="sm">{{ statusLabel }}</Badge>
+              <Badge
+                :variant="statusVariant"
+                size="sm"
+                >{{ statusLabel }}</Badge
+              >
             </template>
           </div>
         </div>
@@ -33,7 +35,12 @@
         <p class="font-semibold" :class="amountClass">
           {{ amountPrefix }}{{ displayAmount }}
         </p>
-        <Badge v-if="!compact" :variant="badgeVariant" size="sm" class="mt-1 inline-block">
+        <Badge
+          v-if="!compact"
+          :variant="badgeVariant"
+          size="sm"
+          class="mt-1 inline-block"
+        >
           {{ typeLabel }}
         </Badge>
       </div>

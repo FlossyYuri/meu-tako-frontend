@@ -105,8 +105,8 @@ const inputClasses = computed(() => {
     : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:focus:border-primary-400'
 
   const paddingClasses = props.icon
-    ? 'pl-10 pr-3 py-2'
-    : 'px-3 py-2'
+    ? 'pl-9 pr-2.5 py-1.5'
+    : 'px-2.5 py-1.5'
 
   const passwordPaddingClasses = props.type === 'password' ? 'pr-10' : ''
 

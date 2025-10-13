@@ -1,7 +1,9 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-4">
     <!-- Welcome Section -->
-    <div class="bg-gradient-to-r from-primary-600 to-primary-700 rounded-lg p-6 text-white">
+    <div
+      class="bg-gradient-to-r from-primary-600 to-primary-700 rounded-lg p-6 text-white"
+    >
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-2xl font-bold">
@@ -94,7 +96,10 @@
               <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
                 Transações Recentes
               </h2>
-              <NuxtLink to="/transactions" class="text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400">
+              <NuxtLink
+                to="/transactions"
+                class="text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400"
+              >
                 Ver todas
               </NuxtLink>
             </div>
@@ -104,8 +109,14 @@
             <LoadingSpinner text="Carregando transações..." />
           </div>
 
-          <div v-else-if="transactionsStore.recentTransactions.length === 0" class="p-6 text-center">
-            <Icon name="lucide:credit-card" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <div
+            v-else-if="transactionsStore.recentTransactions.length === 0"
+            class="p-6 text-center"
+          >
+            <Icon
+              name="lucide:credit-card"
+              class="w-12 h-12 text-gray-400 mx-auto mb-4"
+            />
             <p class="text-gray-500 dark:text-gray-400">
               Nenhuma transação encontrada
             </p>
@@ -128,7 +139,7 @@
       </div>
 
       <!-- Quick Actions & Wallets -->
-      <div class="space-y-6">
+      <div class="space-y-4">
         <!-- Quick Actions -->
         <Card>
           <template #header>
@@ -138,19 +149,21 @@
           </template>
 
           <div class="space-y-3">
-            <Button to="/transactions/new?type=income" variant="success" full-width icon="lucide:plus">
-              Adicionar Receita
-            </Button>
-
-            <Button to="/transactions/new?type=expense" variant="error" full-width icon="lucide:minus">
-              Adicionar Despesa
-            </Button>
-
-            <Button to="/transactions/transfer" variant="outline" full-width icon="lucide:arrow-right-left">
+            <Button
+              to="/transactions/transfer"
+              variant="outline"
+              full-width
+              icon="lucide:arrow-right-left"
+            >
               Transferir
             </Button>
 
-            <Button to="/goals/new" variant="outline" full-width icon="lucide:target">
+            <Button
+              to="/goals/new"
+              variant="outline"
+              full-width
+              icon="lucide:target"
+            >
               Nova Meta
             </Button>
           </div>
@@ -163,7 +176,10 @@
               <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
                 Carteiras
               </h2>
-              <NuxtLink to="/wallets" class="text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400">
+              <NuxtLink
+                to="/wallets"
+                class="text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400"
+              >
                 Gerenciar
               </NuxtLink>
             </div>
@@ -173,8 +189,14 @@
             <LoadingSpinner size="sm" />
           </div>
 
-          <div v-else-if="walletsStore.wallets.length === 0" class="p-4 text-center">
-            <Icon name="lucide:wallet" class="w-8 h-8 text-gray-400 mx-auto mb-2" />
+          <div
+            v-else-if="walletsStore.wallets.length === 0"
+            class="p-4 text-center"
+          >
+            <Icon
+              name="lucide:wallet"
+              class="w-8 h-8 text-gray-400 mx-auto mb-2"
+            />
             <p class="text-sm text-gray-500 dark:text-gray-400">
               Nenhuma carteira
             </p>

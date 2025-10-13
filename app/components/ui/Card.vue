@@ -52,9 +52,9 @@ const cardClasses = computed(() => {
 // Padding responsivo por tamanho
 const paddingMap = {
   none: { content: 'p-0', header: 'px-0 py-0', footer: 'px-0 py-0' },
-  sm:   { content: 'p-3 sm:p-4', header: 'px-3 sm:px-4 py-2 sm:py-3', footer: 'px-3 sm:px-4 py-2 sm:py-3' },
-  md:   { content: 'p-4 sm:p-6', header: 'px-4 sm:px-6 py-3 sm:py-4', footer: 'px-4 sm:px-6 py-3 sm:py-4' },
-  lg:   { content: 'p-6 sm:p-8', header: 'px-6 sm:px-8 py-4 sm:py-5', footer: 'px-6 sm:px-8 py-4 sm:py-5' }
+  sm:   { content: 'p-2.5', header: 'px-2.5 py-2', footer: 'px-2.5 py-2' },
+  md:   { content: 'p-3 sm:p-4', header: 'px-3 sm:px-4 py-2.5 sm:py-3', footer: 'px-3 sm:px-4 py-2.5 sm:py-3' },
+  lg:   { content: 'p-4 sm:p-6', header: 'px-4 sm:px-6 py-3 sm:py-4', footer: 'px-4 sm:px-6 py-3 sm:py-4' }
 } as const
 
 const contentPaddingClass = computed(() => paddingMap[props.padding].content)
