@@ -5,7 +5,6 @@
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
-    <Toaster position="top-center" />
   </div>
 </template>
 

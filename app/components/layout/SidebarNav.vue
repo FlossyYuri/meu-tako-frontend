@@ -84,7 +84,7 @@ const authStore = useAuthStore()
 const route = useRoute()
 
 const navigationItems: NavItem[] = [
-  { name: 'Dashboard', href: '/', icon: 'lucide:layout-dashboard' },
+  { name: 'Dashboard', href: '/dashboard', icon: 'lucide:layout-dashboard' },
   { name: 'Transações', href: '/transactions', icon: 'lucide:credit-card' },
   { name: 'Receitas', href: '/incomes', icon: 'lucide:trending-up' },
   { name: 'Despesas', href: '/expenses', icon: 'lucide:trending-down' },

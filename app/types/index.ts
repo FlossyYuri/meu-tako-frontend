@@ -231,23 +231,31 @@ export interface LimitStatus {
 
 // Dashboard types
 export interface DashboardSummary {
-  total_income: number;
-  total_expense: number;
-  balance: number;
-  top_expense_categories: Array<{
-    name: string;
-    total: number;
-  }>;
-  recent_transactions: Transaction[];
+  totalBalance: number;
+  monthlyIncome: number;
+  monthlyExpenses: number;
+  monthlyNet: number;
+  activeGoals: number;
+  activeLimits: number;
+  wallets: number;
 }
 
-export interface BalanceSummary {
-  total_balance: number;
+export interface DashboardBalance {
+  totalBalance: number;
   wallets: Array<{
     wallet_id: string;
     wallet_name: string;
-    balance: number;
+    balance: string;
+    is_default: boolean;
   }>;
+}
+
+export interface DashboardData {
+  summary: DashboardSummary;
+  balance: DashboardBalance;
+  recentTransactions: Transaction[];
+  activeGoals: Goal[];
+  activeLimits: Limit[];
 }
 
 // Report types
