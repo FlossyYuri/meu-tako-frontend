@@ -17,8 +17,8 @@
 
       <button
         v-if="isMobile"
-        @click="$emit('close')"
         class="p-1.5 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+        @click="$emit('close')"
       >
         <Icon name="lucide:x" class="w-4 h-4" />
       </button>
@@ -60,6 +60,13 @@
             {{ authStore.user?.email || 'email@exemplo.com' }}
           </p>
         </div>
+        <button
+          class="p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
+          title="Sair"
+          @click="handleLogout"
+        >
+          <Icon name="lucide:log-out" class="w-4 h-4" />
+        </button>
       </div>
     </div>
   </div>
@@ -82,6 +89,7 @@ defineEmits<{
 
 const authStore = useAuthStore()
 const route = useRoute()
+const router = useRouter()
 
 const navigationItems: NavItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: 'lucide:layout-dashboard' },
@@ -101,5 +109,14 @@ const isActive = (href: string) => {
     return route.path === '/'
   }
   return route.path.startsWith(href)
+}
+
+const handleLogout = async () => {
+  try {
+    await authStore.logout()
+    await router.push('/auth/login')
+  } catch (error) {
+    console.error('Erro ao fazer logout:', error)
+  }
 }
 </script>
