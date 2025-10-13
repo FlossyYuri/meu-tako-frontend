@@ -260,30 +260,52 @@ export interface DashboardData {
 
 // Report types
 export interface MonthlyReport {
-  month: string;
-  year: number;
-  total_income: number;
-  total_expense: number;
-  balance: number;
-  categories: Array<{
-    name: string;
-    income: number;
-    expense: number;
+  period: {
+    year: number;
+    month: number;
+  };
+  totalIncome: number;
+  totalExpenses: number;
+  netIncome: number;
+  incomeDetails: Array<{
+    categoryId: string;
+    categoryName: string;
+    totalAmount: number;
+    transactionCount: number;
+    percentage: number;
+  }>;
+  expenseDetails: Array<{
+    categoryId: string;
+    categoryName: string;
+    totalAmount: number;
+    transactionCount: number;
+    percentage: number;
   }>;
 }
 
 export interface CategoryReport {
-  category_name: string;
-  total_amount: number;
-  transaction_count: number;
-  percentage: number;
+  period: {
+    startDate: string;
+    endDate: string;
+  };
+  totalExpenses: number;
+  categories: Array<{
+    categoryId: string;
+    categoryName: string;
+    totalAmount: number;
+    transactionCount: number;
+    percentage: number;
+  }>;
 }
 
 export interface TrendReport {
-  period: string;
-  income_trend: number;
-  expense_trend: number;
-  balance_trend: number;
+  trends: Array<{
+    month: number;
+    year: number;
+    income: number;
+    expenses: number;
+    net: number;
+  }>;
 }
 
 // API Response types
