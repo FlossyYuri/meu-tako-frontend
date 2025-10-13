@@ -1,6 +1,9 @@
 <template>
   <div class="space-y-6">
-    <PageHeader title="Categorias" subtitle="Gerencie categorias de receitas e despesas">
+    <PageHeader
+      title="Categorias"
+      subtitle="Gerencie categorias de receitas e despesas"
+    >
       <template #actions>
         <div class="flex items-center gap-2">
           <Button variant="primary" icon="lucide:plus" @click="openCreate()">
@@ -34,7 +37,12 @@
     <Card>
       <div class="p-4 flex flex-col md:flex-row md:items-center gap-4">
         <div class="flex-1">
-          <Input v-model="search" type="search" placeholder="Buscar por nome/descrição..." icon="lucide:search" />
+          <Input
+            v-model="search"
+            type="search"
+            placeholder="Buscar por nome/descrição..."
+            icon="lucide:search"
+          />
         </div>
       </div>
     </Card>
@@ -48,7 +56,9 @@
       <!-- Receitas -->
       <Card v-if="tab === 'income'">
         <template #header>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Categorias de Receitas</h2>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+            Categorias de Receitas
+          </h2>
         </template>
 
         <div v-if="categoriesStore.isLoading" class="p-6">
@@ -56,8 +66,13 @@
         </div>
 
         <div v-else-if="filteredIncome.length === 0" class="p-6 text-center">
-          <Icon name="lucide:tags" class="w-10 h-10 text-gray-400 mx-auto mb-2" />
-          <p class="text-gray-500 dark:text-gray-400">Nenhuma categoria encontrada</p>
+          <Icon
+            name="lucide:tags"
+            class="w-10 h-10 text-gray-400 mx-auto mb-2"
+          />
+          <p class="text-gray-500 dark:text-gray-400">
+            Nenhuma categoria encontrada
+          </p>
         </div>
 
         <div v-else class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -67,15 +82,51 @@
             class="p-4 flex items-center justify-between"
           >
             <div class="flex items-center gap-3">
-              <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: c.color || '#9ca3af' }" />
               <div>
-                <p class="font-medium text-gray-900 dark:text-white">{{ c.name }}</p>
-                <p v-if="c.description" class="text-sm text-gray-500 dark:text-gray-400">{{ c.description }}</p>
+                <p class="font-medium text-gray-900 dark:text-white">
+                  {{ c.name }}
+                </p>
+                <p
+                  v-if="c.description"
+                  class="text-sm text-gray-500 dark:text-gray-400"
+                >
+                  {{ c.description }}
+                </p>
               </div>
             </div>
-            <div class="flex items-center gap-2">
-              <Button size="sm" variant="outline" icon="lucide:edit" @click="openEdit(c, 'income')">Editar</Button>
-              <Button size="sm" variant="error" icon="lucide:trash-2" @click="onDelete(c, 'income')">Excluir</Button>
+            <!-- Desktop: Show buttons directly -->
+            <div class="hidden md:flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                icon="lucide:edit"
+                @click="openEdit(c, 'income')"
+                >Editar</Button
+              >
+              <Button
+                size="sm"
+                variant="error"
+                icon="lucide:trash-2"
+                @click="onDelete(c, 'income')"
+                >Excluir</Button
+              >
+            </div>
+
+            <!-- Mobile: Show dropdown -->
+            <div class="md:hidden">
+              <ActionDropdown>
+                <ActionItem
+                  label="Editar"
+                  icon="lucide:edit"
+                  @click="openEdit(c, 'income')"
+                />
+                <ActionItem
+                  label="Excluir"
+                  icon="lucide:trash-2"
+                  variant="danger"
+                  @click="onDelete(c, 'income')"
+                />
+              </ActionDropdown>
             </div>
           </div>
         </div>
@@ -84,7 +135,9 @@
       <!-- Despesas -->
       <Card v-else>
         <template #header>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Categorias de Despesas</h2>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+            Categorias de Despesas
+          </h2>
         </template>
 
         <div v-if="categoriesStore.isLoading" class="p-6">
@@ -92,8 +145,13 @@
         </div>
 
         <div v-else-if="filteredExpense.length === 0" class="p-6 text-center">
-          <Icon name="lucide:tags" class="w-10 h-10 text-gray-400 mx-auto mb-2" />
-          <p class="text-gray-500 dark:text-gray-400">Nenhuma categoria encontrada</p>
+          <Icon
+            name="lucide:tags"
+            class="w-10 h-10 text-gray-400 mx-auto mb-2"
+          />
+          <p class="text-gray-500 dark:text-gray-400">
+            Nenhuma categoria encontrada
+          </p>
         </div>
 
         <div v-else class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -103,20 +161,32 @@
             class="p-4 flex items-center justify-between"
           >
             <div class="flex items-center gap-3">
-              <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: c.color || '#9ca3af' }" />
               <div>
                 <div class="flex items-center gap-2">
-                  <p class="font-medium text-gray-900 dark:text-white">{{ c.name }}</p>
+                  <p class="font-medium text-gray-900 dark:text-white">
+                    {{ c.name }}
+                  </p>
                   <Badge :variant="c.active ? 'success' : 'warning'" size="sm">
                     {{ c.active ? 'Ativa' : 'Inativa' }}
                   </Badge>
-                  <Badge v-if="categoryHasLimit(c.category_id)" variant="info" size="sm">Limite definido</Badge>
+                  <Badge
+                    v-if="categoryHasLimit(c.category_id)"
+                    variant="info"
+                    size="sm"
+                    >Limite definido</Badge
+                  >
                 </div>
-                <p v-if="c.description" class="text-sm text-gray-500 dark:text-gray-400">{{ c.description }}</p>
+                <p
+                  v-if="c.description"
+                  class="text-sm text-gray-500 dark:text-gray-400"
+                >
+                  {{ c.description }}
+                </p>
               </div>
             </div>
 
-            <div class="flex items-center gap-2">
+            <!-- Desktop: Show buttons directly -->
+            <div class="hidden lg:flex items-center gap-2">
               <Button
                 size="sm"
                 variant="outline"
@@ -125,11 +195,55 @@
               >
                 {{ c.active ? 'Desativar' : 'Ativar' }}
               </Button>
-              <Button size="sm" variant="outline" icon="lucide:shield" @click="openLimit(c.category_id)">
+              <Button
+                size="sm"
+                variant="outline"
+                icon="lucide:shield"
+                @click="openLimit(c.category_id)"
+              >
                 {{ categoryHasLimit(c.category_id) ? 'Editar limite' : 'Definir limite' }}
               </Button>
-              <Button size="sm" variant="outline" icon="lucide:edit" @click="openEdit(c, 'expense')">Editar</Button>
-              <Button size="sm" variant="error" icon="lucide:trash-2" @click="onDelete(c, 'expense')">Excluir</Button>
+              <Button
+                size="sm"
+                variant="outline"
+                icon="lucide:edit"
+                @click="openEdit(c, 'expense')"
+                >Editar</Button
+              >
+              <Button
+                size="sm"
+                variant="error"
+                icon="lucide:trash-2"
+                @click="onDelete(c, 'expense')"
+                >Excluir</Button
+              >
+            </div>
+
+            <!-- Mobile/Tablet: Show dropdown -->
+            <div class="lg:hidden">
+              <ActionDropdown>
+                <ActionItem
+                  :label="c.active ? 'Desativar' : 'Ativar'"
+                  :icon="c.active ? 'lucide:toggle-right' : 'lucide:toggle-left'"
+                  @click="onToggleActive(c.category_id)"
+                />
+                <ActionItem
+                  :label="categoryHasLimit(c.category_id) ? 'Editar limite' : 'Definir limite'"
+                  icon="lucide:shield"
+                  @click="openLimit(c.category_id)"
+                />
+                <ActionItem
+                  label="Editar"
+                  icon="lucide:edit"
+                  @click="openEdit(c, 'expense')"
+                />
+                <ActionItem
+                  label="Excluir"
+                  icon="lucide:trash-2"
+                  variant="danger"
+                  @click="onDelete(c, 'expense')"
+                />
+              </ActionDropdown>
             </div>
           </div>
         </div>

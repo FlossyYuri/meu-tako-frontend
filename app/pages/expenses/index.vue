@@ -2,7 +2,9 @@
   <div class="space-y-6">
     <PageHeader title="Despesas" subtitle="Gerencie suas despesas">
       <template #actions>
-        <Button to="/expenses/new" variant="error" icon="lucide:minus">Nova Despesa</Button>
+        <Button to="/expenses/new" variant="error" icon="lucide:minus"
+          >Nova Despesa</Button
+        >
       </template>
     </PageHeader>
 
@@ -11,10 +13,7 @@
       <div class="p-4 grid grid-cols-1 md:grid-cols-5 gap-4">
         <div>
           <label class="label">Período</label>
-          <select
-            v-model="filters.period"
-            class="input"
-          >
+          <select v-model="filters.period" class="input">
             <option value="all">Todos</option>
             <option value="today">Hoje</option>
             <option value="week">Esta semana</option>
@@ -27,7 +26,11 @@
           <label class="label">Carteira</label>
           <select v-model="filters.wallet_id" class="input">
             <option value="">Todas</option>
-            <option v-for="w in walletsStore.wallets" :key="w.wallet_id" :value="w.wallet_id">
+            <option
+              v-for="w in walletsStore.wallets"
+              :key="w.wallet_id"
+              :value="w.wallet_id"
+            >
               {{ w.wallet_name }}
             </option>
           </select>
@@ -37,7 +40,11 @@
           <label class="label">Categoria</label>
           <select v-model="filters.category_id" class="input">
             <option value="">Todas</option>
-            <option v-for="c in categoriesStore.expenseCategories" :key="c.category_id" :value="c.category_id">
+            <option
+              v-for="c in categoriesStore.expenseCategories"
+              :key="c.category_id"
+              :value="c.category_id"
+            >
               {{ c.name }}
             </option>
           </select>
@@ -54,7 +61,12 @@
 
         <div>
           <label class="label">Buscar</label>
-          <Input v-model="filters.search" type="search" placeholder="Descrição..." icon="lucide:search" />
+          <Input
+            v-model="filters.search"
+            type="search"
+            placeholder="Descrição..."
+            icon="lucide:search"
+          />
         </div>
       </div>
     </Card>
@@ -66,14 +78,19 @@
 
     <!-- Empty -->
     <div v-else-if="pagedExpenses.length === 0" class="text-center py-12">
-      <Icon name="lucide:credit-card" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
+      <Icon
+        name="lucide:credit-card"
+        class="w-16 h-16 text-gray-400 mx-auto mb-4"
+      />
       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
         Nenhuma despesa encontrada
       </h3>
       <p class="text-gray-500 dark:text-gray-400 mb-6">
         Comece adicionando sua primeira despesa
       </p>
-      <Button to="/expenses/new" variant="error" icon="lucide:minus">Adicionar Despesa</Button>
+      <Button to="/expenses/new" variant="error" icon="lucide:minus"
+        >Adicionar Despesa</Button
+      >
     </div>
 
     <!-- Lista -->
@@ -92,33 +109,95 @@
               <p class="font-medium text-gray-900 dark:text-white">
                 {{ e.description || 'Despesa' }}
               </p>
-              <div class="text-sm text-gray-500 dark:text-gray-400 flex flex-wrap gap-2">
+              <div
+                class="text-sm text-gray-500 dark:text-gray-400 flex flex-wrap gap-2"
+              >
                 <span>{{ formatDisplayDate(e.date) }}</span>
-                <span v-if="getCategoryName(e.expense_category_id)">• {{ getCategoryName(e.expense_category_id) }}</span>
+                <span v-if="getCategoryName(e.expense_category_id)"
+                  >• {{ getCategoryName(e.expense_category_id) }}</span
+                >
                 <span>• {{ getWalletName(e.wallet_id) }}</span>
               </div>
             </div>
           </div>
 
           <div class="text-right">
-            <p class="font-semibold text-error-600">-{{ formatCurrency(e.amount) }}</p>
-            <Badge :variant="e.paid ? 'success' : 'warning'" size="sm" class="mt-1">
+            <p class="font-semibold text-error-600">
+              -{{ formatCurrency(e.amount) }}
+            </p>
+            <Badge
+              :variant="e.paid ? 'success' : 'warning'"
+              size="sm"
+              class="mt-1"
+            >
               {{ e.paid ? 'Pago' : 'Pendente' }}
             </Badge>
           </div>
         </div>
 
-        <div class="mt-3 flex items-center justify-end gap-2">
-          <Button :to="`/expenses/${e.expense_id}`" variant="outline" size="sm" icon="lucide:eye">Ver</Button>
-          <Button v-if="!e.paid" variant="success" size="sm" icon="lucide:check" @click="onMarkPaid(e.expense_id)">
+        <!-- Desktop: Show buttons directly -->
+        <div class="mt-3 hidden md:flex items-center justify-end gap-2">
+          <Button
+            :to="`/expenses/${e.expense_id}`"
+            variant="outline"
+            size="sm"
+            icon="lucide:eye"
+            >Ver</Button
+          >
+          <Button
+            v-if="!e.paid"
+            variant="success"
+            size="sm"
+            icon="lucide:check"
+            @click="onMarkPaid(e.expense_id)"
+          >
             Marcar como pago
           </Button>
-          <Button variant="outline" size="sm" icon="lucide:edit" :to="`/expenses/${e.expense_id}`">
+          <Button
+            variant="outline"
+            size="sm"
+            icon="lucide:edit"
+            :to="`/expenses/${e.expense_id}`"
+          >
             Editar
           </Button>
-          <Button variant="error" size="sm" icon="lucide:trash-2" @click="onDelete(e.expense_id)">
+          <Button
+            variant="error"
+            size="sm"
+            icon="lucide:trash-2"
+            @click="onDelete(e.expense_id)"
+          >
             Excluir
           </Button>
+        </div>
+
+        <!-- Mobile: Show dropdown -->
+        <div class="mt-3 md:hidden flex items-center justify-end">
+          <ActionDropdown>
+            <ActionItem
+              label="Ver"
+              icon="lucide:eye"
+              @click="$router.push(`/expenses/${e.expense_id}`)"
+            />
+            <ActionItem
+              v-if="!e.paid"
+              label="Marcar como pago"
+              icon="lucide:check"
+              variant="success"
+              @click="onMarkPaid(e.expense_id)"
+            />
+            <ActionItem
+              label="Editar"
+              icon="lucide:edit"
+              @click="$router.push(`/expenses/${e.expense_id}`)"
+            />
+            <ActionItem
+              label="Excluir"
+              icon="lucide:trash-2"
+              variant="danger"
+              @click="onDelete(e.expense_id)"
+            />
+          </ActionDropdown>
         </div>
       </div>
     </div>
@@ -129,14 +208,41 @@
         Mostrando {{ startItem }} a {{ endItem }} de {{ totalItems }} despesas
       </div>
       <div class="flex gap-2">
-        <Button variant="outline" size="sm" :disabled="page === 1" @click="page = 1">Primeira</Button>
-        <Button variant="outline" size="sm" :disabled="page === 1" @click="page--">Anterior</Button>
-        <Button variant="outline" size="sm" :disabled="page === totalPages" @click="page++">Próxima</Button>
-        <Button variant="outline" size="sm" :disabled="page === totalPages" @click="page = totalPages">Última</Button>
+        <Button
+          variant="outline"
+          size="sm"
+          :disabled="page === 1"
+          @click="page = 1"
+          >Primeira</Button
+        >
+        <Button
+          variant="outline"
+          size="sm"
+          :disabled="page === 1"
+          @click="page--"
+          >Anterior</Button
+        >
+        <Button
+          variant="outline"
+          size="sm"
+          :disabled="page === totalPages"
+          @click="page++"
+          >Próxima</Button
+        >
+        <Button
+          variant="outline"
+          size="sm"
+          :disabled="page === totalPages"
+          @click="page = totalPages"
+          >Última</Button
+        >
       </div>
     </div>
 
-    <div v-if="transactionsStore.error" class="text-center text-error-600 dark:text-error-400">
+    <div
+      v-if="transactionsStore.error"
+      class="text-center text-error-600 dark:text-error-400"
+    >
       {{ transactionsStore.error }}
     </div>
   </div>

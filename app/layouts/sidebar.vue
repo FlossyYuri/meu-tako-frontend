@@ -33,7 +33,7 @@
       <!-- Top bar for mobile -->
       <div class="lg:hidden">
         <div
-          class="flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700"
+          class="sticky top-0 z-40 flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700"
         >
           <button
             class="p-1.5 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -54,16 +54,6 @@
           </NuxtLink>
 
           <div class="flex items-center space-x-1">
-            <button
-              class="p-1.5 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
-              @click="toggleTheme"
-            >
-              <Icon
-                :name="isDark ? 'lucide:sun' : 'lucide:moon'"
-                class="w-4 h-4"
-              />
-            </button>
-
             <div class="relative">
               <button
                 class="flex items-center space-x-1 p-1.5 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -115,14 +105,9 @@
 
 <script setup lang="ts">
 const authStore = useAuthStore()
-const { isDark, toggle } = useTheme()
 
 const sidebarOpen = ref(false)
 const userMenuOpen = ref(false)
-
-const toggleTheme = () => {
-  toggle()
-}
 
 const logout = async () => {
   try {
