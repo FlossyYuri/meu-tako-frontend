@@ -89,6 +89,7 @@ const navigationItems: NavItem[] = [
   { name: 'Receitas', href: '/incomes', icon: 'lucide:trending-up' },
   { name: 'Despesas', href: '/expenses', icon: 'lucide:trending-down' },
   { name: 'Carteiras', href: '/wallets', icon: 'lucide:wallet' },
+  { name: 'Categorias', href: '/categories', icon: 'lucide:tags' },
   { name: 'Metas', href: '/goals', icon: 'lucide:target' },
   { name: 'Limites', href: '/limits', icon: 'lucide:shield' },
   { name: 'Relatórios', href: '/reports', icon: 'lucide:bar-chart-3' },
