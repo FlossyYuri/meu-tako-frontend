@@ -12,7 +12,7 @@ export default defineNuxtConfig({
     '@vee-validate/nuxt',
     '@vueuse/nuxt',
   ],
-  css: ['~/css/main.css'],
+  css: ['~/assets/css/main.css'],
   components: [
     {
       path: '~/components',

@@ -10,10 +10,31 @@
       </p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
       <!-- Navigation -->
       <div class="lg:col-span-1">
-        <Card>
+        <!-- Mobile: Horizontal scroll navigation -->
+        <div class="lg:hidden mb-4">
+          <div class="flex space-x-1 overflow-x-auto pb-2 scrollbar-hide">
+            <button
+              v-for="tab in tabs"
+              :key="tab.id"
+              class="flex-shrink-0 flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 whitespace-nowrap"
+              :class="[
+                activeTab === tab.id
+                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700'
+              ]"
+              @click="activeTab = tab.id"
+            >
+              <Icon :name="tab.icon" class="w-4 h-4" />
+              <span>{{ tab.name }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Desktop: Vertical navigation -->
+        <Card class="hidden lg:block">
           <nav class="space-y-1">
             <button
               v-for="tab in tabs"
@@ -46,8 +67,8 @@
             </p>
           </template>
 
-          <form class="space-y-6" @submit.prevent="updateProfile">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <form class="space-y-4 sm:space-y-6" @submit.prevent="updateProfile">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <Input
                   v-model="profileForm.name"
@@ -84,12 +105,13 @@
               />
             </div>
 
-            <div class="flex justify-end">
+            <div class="flex flex-col sm:flex-row sm:justify-end gap-3">
               <Button
                 type="submit"
                 variant="primary"
                 :loading="authStore.isLoading"
                 :disabled="!isProfileFormValid"
+                class="w-full sm:w-auto"
               >
                 Salvar Alterações
               </Button>
@@ -108,43 +130,46 @@
             </p>
           </template>
 
-          <form class="space-y-6" @submit.prevent="changePassword">
-            <div>
-              <Input
-                v-model="passwordForm.current_password"
-                type="password"
-                label="Senha atual"
-                :error="passwordErrors.current_password"
-                required
-              />
+          <form class="space-y-4 sm:space-y-6" @submit.prevent="changePassword">
+            <div class="space-y-4 sm:space-y-6">
+              <div>
+                <Input
+                  v-model="passwordForm.current_password"
+                  type="password"
+                  label="Senha atual"
+                  :error="passwordErrors.current_password"
+                  required
+                />
+              </div>
+
+              <div>
+                <Input
+                  v-model="passwordForm.new_password"
+                  type="password"
+                  label="Nova senha"
+                  :error="passwordErrors.new_password"
+                  required
+                />
+              </div>
+
+              <div>
+                <Input
+                  v-model="passwordForm.confirm_password"
+                  type="password"
+                  label="Confirmar nova senha"
+                  :error="passwordErrors.confirm_password"
+                  required
+                />
+              </div>
             </div>
 
-            <div>
-              <Input
-                v-model="passwordForm.new_password"
-                type="password"
-                label="Nova senha"
-                :error="passwordErrors.new_password"
-                required
-              />
-            </div>
-
-            <div>
-              <Input
-                v-model="passwordForm.confirm_password"
-                type="password"
-                label="Confirmar nova senha"
-                :error="passwordErrors.confirm_password"
-                required
-              />
-            </div>
-
-            <div class="flex justify-end">
+            <div class="flex flex-col sm:flex-row sm:justify-end gap-3">
               <Button
                 type="submit"
                 variant="primary"
                 :loading="authStore.isLoading"
                 :disabled="!isPasswordFormValid"
+                class="w-full sm:w-auto"
               >
                 Alterar Senha
               </Button>
@@ -163,7 +188,7 @@
             </p>
           </template>
 
-          <div class="space-y-6">
+          <div class="space-y-4 sm:space-y-6">
             <!-- Theme -->
             <div>
               <label
@@ -171,39 +196,40 @@
               >
                 Tema
               </label>
-              <div class="flex space-x-4">
+              <!-- Mobile: Stack vertically -->
+              <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
                 <button
-                  class="flex items-center space-x-2 px-4 py-2 border rounded-md transition-colors duration-200"
+                  class="flex items-center justify-center space-x-2 px-4 py-3 border rounded-md transition-colors duration-200"
                   :class="[
                     theme === 'light'
                       ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900 dark:text-primary-300'
                       : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700'
                   ]"
-                  @click="setTheme('light')"
+                  @click="handleThemeChange('light')"
                 >
                   <Icon name="lucide:sun" class="w-4 h-4" />
                   <span>Claro</span>
                 </button>
                 <button
-                  class="flex items-center space-x-2 px-4 py-2 border rounded-md transition-colors duration-200"
+                  class="flex items-center justify-center space-x-2 px-4 py-3 border rounded-md transition-colors duration-200"
                   :class="[
                     theme === 'dark'
                       ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900 dark:text-primary-300'
                       : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700'
                   ]"
-                  @click="setTheme('dark')"
+                  @click="handleThemeChange('dark')"
                 >
                   <Icon name="lucide:moon" class="w-4 h-4" />
                   <span>Escuro</span>
                 </button>
                 <button
-                  class="flex items-center space-x-2 px-4 py-2 border rounded-md transition-colors duration-200"
+                  class="flex items-center justify-center space-x-2 px-4 py-3 border rounded-md transition-colors duration-200"
                   :class="[
                     theme === 'auto'
                       ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900 dark:text-primary-300'
                       : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700'
                   ]"
-                  @click="setTheme('auto')"
+                  @click="handleThemeChange('auto')"
                 >
                   <Icon name="lucide:monitor" class="w-4 h-4" />
                   <span>Automático</span>
@@ -217,7 +243,7 @@
             <!-- Currency -->
             <div>
               <label
-                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
               >
                 Moeda padrão
               </label>
@@ -239,37 +265,45 @@
               >
                 Notificações
               </label>
-              <div class="space-y-3">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p class="text-sm font-medium text-gray-900 dark:text-white">
+              <div class="space-y-4">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1 min-w-0">
+                    <p
+                      class="text-sm font-medium text-gray-900 dark:text-white"
+                    >
                       Lembretes de pagamento
                     </p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       Receba lembretes sobre pagamentos pendentes
                     </p>
                   </div>
-                  <input
-                    v-model="preferences.paymentReminders"
-                    type="checkbox"
-                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                  />
+                  <div class="flex-shrink-0">
+                    <input
+                      v-model="preferences.paymentReminders"
+                      type="checkbox"
+                      class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    />
+                  </div>
                 </div>
 
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p class="text-sm font-medium text-gray-900 dark:text-white">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1 min-w-0">
+                    <p
+                      class="text-sm font-medium text-gray-900 dark:text-white"
+                    >
                       Relatórios mensais
                     </p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       Receba resumos mensais por e-mail
                     </p>
                   </div>
-                  <input
-                    v-model="preferences.monthlyReports"
-                    type="checkbox"
-                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                  />
+                  <div class="flex-shrink-0">
+                    <input
+                      v-model="preferences.monthlyReports"
+                      type="checkbox"
+                      class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -287,38 +321,58 @@
             </p>
           </template>
 
-          <div class="space-y-6">
+          <div class="space-y-4 sm:space-y-6">
             <!-- Export Data -->
-            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-              <div class="flex items-center justify-between">
-                <div>
+            <div
+              class="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+            >
+              <div
+                class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+              >
+                <div class="flex-1 min-w-0">
                   <h3 class="font-medium text-gray-900 dark:text-white">
                     Exportar dados
                   </h3>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     Baixe uma cópia dos seus dados
                   </p>
                 </div>
-                <Button variant="outline" @click="exportData">
-                  Exportar
-                </Button>
+                <div class="flex-shrink-0">
+                  <Button
+                    variant="outline"
+                    @click="exportData"
+                    class="w-full sm:w-auto"
+                  >
+                    Exportar
+                  </Button>
+                </div>
               </div>
             </div>
 
             <!-- Delete Account -->
-            <div class="border border-error-200 dark:border-error-800 rounded-lg p-4 bg-error-50 dark:bg-error-900">
-              <div class="flex items-center justify-between">
-                <div>
+            <div
+              class="border border-error-200 dark:border-error-800 rounded-lg p-4 bg-error-50 dark:bg-error-900"
+            >
+              <div
+                class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+              >
+                <div class="flex-1 min-w-0">
                   <h3 class="font-medium text-error-900 dark:text-error-100">
                     Excluir conta
                   </h3>
-                  <p class="text-sm text-error-700 dark:text-error-300">
+                  <p class="text-sm text-error-700 dark:text-error-300 mt-1">
                     Esta ação não pode ser desfeita
                   </p>
                 </div>
-                <Button variant="error" @click="confirmDeleteAccount">
-                  Excluir
-                </Button>
+                <div class="flex-shrink-0">
+                  <Button
+                    variant="error"
+                    @click="confirmDeleteAccount"
+                    class="w-full sm:w-auto"
+                  >
+                    Excluir
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -335,10 +389,11 @@ definePageMeta({
 
 const authStore = useAuthStore()
 const { success, error: showError } = useNotifications()
+
 // Tema global
+const themeStore = useThemeStore()
 const { mode, setTheme, isDark } = useTheme()
-// Expor 'theme' para o template reaproveitando a estrutura existente
-const theme = mode
+const theme = computed(() => mode.value)
 
 // State
 const activeTab = ref('profile')
@@ -401,6 +456,11 @@ const isPasswordFormValid = computed(() => {
 })
 
 // Methods
+const handleThemeChange = (newTheme: 'light' | 'dark' | 'auto') => {
+  themeStore.setTheme(newTheme)
+  success(`Tema alterado para ${newTheme === 'auto' ? 'automático' : newTheme === 'light' ? 'claro' : 'escuro'}`)
+}
+
 const updateProfile = async () => {
   try {
     await authStore.updateProfile({
