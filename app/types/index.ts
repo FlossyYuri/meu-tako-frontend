@@ -157,7 +157,6 @@ export interface Goal {
   start_date: string;
   end_date: string;
   status: 'active' | 'inactive';
-  is_active: boolean;
   created_at: string;
   updated_at: string;
   category?: Category;

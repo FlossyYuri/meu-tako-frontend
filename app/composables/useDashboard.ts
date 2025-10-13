@@ -99,7 +99,7 @@ export const useDashboard = () => {
 
   const fetchActiveGoals = async (): Promise<Goal[]> => {
     try {
-      const response = await api<Goal[]>('/goals?is_active=true');
+      const response = await api<Goal[]>('/goals?status=active');
       return response;
     } catch (err: any) {
       console.error('Erro ao buscar metas ativas:', err);

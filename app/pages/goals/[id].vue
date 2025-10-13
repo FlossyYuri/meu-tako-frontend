@@ -22,8 +22,8 @@
               {{ formatDisplayDate(goal.end_date) }}
             </p>
           </div>
-          <Badge :variant="goal.is_active ? 'success' : 'default'">
-            {{ goal.is_active ? 'Ativa' : 'Inativa' }}
+          <Badge :variant="goal.status === 'active' ? 'success' : 'default'">
+            {{ goal.status === 'active' ? 'Ativa' : 'Inativa' }}
           </Badge>
         </div>
       </template>

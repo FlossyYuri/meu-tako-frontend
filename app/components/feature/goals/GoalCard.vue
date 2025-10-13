@@ -14,8 +14,11 @@
             {{ formatDisplayDate(goal.end_date) }}
           </p>
         </div>
-        <Badge :variant="goal.is_active ? 'success' : 'default'" size="sm">
-          {{ goal.is_active ? 'Ativa' : 'Inativa' }}
+        <Badge
+          :variant="goal.status === 'active' ? 'success' : 'default'"
+          size="sm"
+        >
+          {{ goal.status === 'active' ? 'Ativa' : 'Inativa' }}
         </Badge>
       </div>
 

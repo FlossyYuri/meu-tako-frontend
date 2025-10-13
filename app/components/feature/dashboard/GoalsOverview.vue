@@ -48,8 +48,11 @@
               {{ goal.description }}
             </p>
           </div>
-          <Badge :variant="goal.is_active ? 'default' : 'secondary'" size="sm">
-            {{ goal.is_active ? 'Ativa' : 'Inativa' }}
+          <Badge
+            :variant="goal.status === 'active' ? 'default' : 'secondary'"
+            size="sm"
+          >
+            {{ goal.status === 'active' ? 'Ativa' : 'Inativa' }}
           </Badge>
         </div>
 
