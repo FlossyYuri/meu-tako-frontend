@@ -9,9 +9,30 @@
       </template>
     </PageHeader>
 
-    <!-- Loading State -->
-    <div v-if="walletsStore.isLoading" class="flex justify-center py-12">
-      <LoadingSpinner text="Carregando carteiras..." />
+    <!-- Loading State with Skeletons -->
+    <div v-if="walletsStore.isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <Card v-for="i in 6" :key="i" class="p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-3">
+            <Skeleton width="2.5rem" height="2.5rem" rounded="lg" />
+            <div>
+              <Skeleton width="10rem" height="1rem" className="mb-2" />
+              <Skeleton width="6rem" height="0.75rem" />
+            </div>
+          </div>
+          <Skeleton width="5rem" height="1.75rem" rounded="full" />
+        </div>
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <Skeleton width="6rem" height="0.875rem" />
+            <Skeleton width="8rem" height="1.5rem" />
+          </div>
+          <div class="flex items-center justify-between">
+            <Skeleton width="7rem" height="0.875rem" />
+            <Skeleton width="5rem" height="0.875rem" />
+          </div>
+        </div>
+      </Card>
     </div>
 
     <!-- Empty State -->
@@ -57,6 +78,10 @@
         </div>
       </div>
     </Card>
+
+    <div v-if="walletsStore.error" class="text-center text-error-600 dark:text-error-400">
+      {{ walletsStore.error }}
+    </div>
   </div>
 </template>
 
