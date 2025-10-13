@@ -54,6 +54,35 @@ export const useWalletsStore = defineStore('wallets', () => {
     }
   };
 
+  const fetchWalletById = async (walletId: string) => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+
+      const response = await $fetch<Wallet>(`/wallets/${walletId}`, {
+        headers: {
+          Authorization: `Bearer ${useAuthStore().token}`,
+        },
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+
+      const idx = wallets.value.findIndex(w => w.wallet_id === walletId);
+      if (idx !== -1) wallets.value[idx] = response;
+      else wallets.value.push(response);
+
+      if (!currentWallet.value || currentWallet.value.wallet_id === walletId) {
+        currentWallet.value = response;
+      }
+
+      return response;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao obter carteira';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
   const createWallet = async (walletData: CreateWalletRequest) => {
     try {
       isLoading.value = true;
@@ -138,7 +167,7 @@ export const useWalletsStore = defineStore('wallets', () => {
 
       // If deleted wallet was current, set new current
       if (currentWallet.value?.wallet_id === walletId) {
-        currentWallet.value = defaultWallet.value;
+        currentWallet.value = defaultWallet.value || null;
       }
 
       return true;
@@ -170,6 +199,13 @@ export const useWalletsStore = defineStore('wallets', () => {
       const index = wallets.value.findIndex((w) => w.wallet_id === walletId);
       if (index !== -1) {
         wallets.value[index] = response;
+      } else {
+        wallets.value.push(response);
+      }
+
+      // Update current wallet if matches
+      if (currentWallet.value?.wallet_id === walletId) {
+        currentWallet.value = response;
       }
 
       return response;
@@ -219,6 +255,7 @@ export const useWalletsStore = defineStore('wallets', () => {
 
     // Actions
     fetchWallets,
+    fetchWalletById,
     createWallet,
     updateWallet,
     deleteWallet,
