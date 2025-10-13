@@ -209,6 +209,9 @@
                   <span>Automático</span>
                 </button>
               </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                Automático segue a preferência do sistema (claro/escuro).
+              </p>
             </div>
 
             <!-- Currency -->
@@ -331,12 +334,14 @@ definePageMeta({
 })
 
 const authStore = useAuthStore()
-const { isDark, toggle: toggleTheme } = useDark()
 const { success, error: showError } = useNotifications()
+// Tema global
+const { mode, setTheme, isDark } = useTheme()
+// Expor 'theme' para o template reaproveitando a estrutura existente
+const theme = mode
 
 // State
 const activeTab = ref('profile')
-const theme = ref('auto')
 
 const tabs = [
   { id: 'profile', name: 'Perfil', icon: 'lucide:user' },
@@ -421,18 +426,6 @@ const changePassword = async () => {
     passwordForm.confirm_password = ''
   } catch (error) {
     showError('Erro ao alterar senha')
-  }
-}
-
-const setTheme = (newTheme: string) => {
-  theme.value = newTheme
-  if (newTheme === 'dark') {
-    isDark.value = true
-  } else if (newTheme === 'light') {
-    isDark.value = false
-  } else {
-    // Auto - use system preference
-    isDark.value = window.matchMedia('(prefers-color-scheme: dark)').matches
   }
 }
 
