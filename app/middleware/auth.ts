@@ -7,7 +7,7 @@ export default defineNuxtRouteMiddleware((to) => {
   }
 
   // Check if user is authenticated
-  if (!authStore.isAuthenticated) {
+  if (!authStore.isAuthenticated && authStore.isInitialized) {
     return navigateTo('/auth/login');
   }
 });

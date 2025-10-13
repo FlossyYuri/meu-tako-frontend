@@ -10,6 +10,7 @@ import type {
 export const useAuthStore = defineStore('auth', () => {
   // State
   const user = ref<User | null>(null);
+  const isInitialized = ref<boolean>(false);
   const token = ref<string | null>(null);
   const refreshToken = ref<string | null>(null);
   const isLoading = ref(false);
@@ -147,6 +148,7 @@ export const useAuthStore = defineStore('auth', () => {
         refreshToken.value = storedRefreshToken;
         user.value = JSON.parse(storedUser);
       }
+      isInitialized.value = true;
     }
   };
 
@@ -236,6 +238,7 @@ export const useAuthStore = defineStore('auth', () => {
     refreshToken,
     isLoading,
     error,
+    isInitialized,
 
     // Getters
     isAuthenticated,
