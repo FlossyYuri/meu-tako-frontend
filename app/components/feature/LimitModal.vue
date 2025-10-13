@@ -1,9 +1,9 @@
 <template>
   <Modal
-    :isOpen="isOpen"
+    :is-open="isOpen"
     :title="limitTitle"
     size="md"
-    @update:isOpen="emit('update:isOpen', $event)"
+    @update:is-open="emit('update:isOpen', $event)"
   >
     <form class="space-y-4" @submit.prevent="onSubmit">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -40,10 +40,19 @@
       />
 
       <div class="flex justify-end gap-2 pt-2">
-        <Button type="button" variant="outline" @click="emit('update:isOpen', false)">
+        <Button
+          type="button"
+          variant="outline"
+          @click="emit('update:isOpen', false)"
+        >
           Cancelar
         </Button>
-        <Button type="submit" variant="primary" :loading="limitsStore.isLoading" :disabled="!isValid">
+        <Button
+          type="submit"
+          variant="primary"
+          :loading="limitsStore.isLoading"
+          :disabled="!isValid"
+        >
           Salvar
         </Button>
       </div>
@@ -71,14 +80,14 @@ const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1,
   .toISOString().split('T')[0]
 
 const form = reactive({
-  amount: '',
+  limit_amount: '',
   start_date: today,
   end_date: endOfMonth,
   description: ''
 })
 
 const errors = reactive({
-  amount: '',
+  limit_amount: '',
   start_date: '',
   end_date: ''
 })
@@ -135,7 +144,7 @@ const onSubmit = async () => {
     if (currentLimit.value) {
       await limitsStore.updateLimit(currentLimit.value.limit_id, {
         expense_category_id: props.expenseCategoryId,
-        amount: parseFloat(form.amount),
+        limit_amount: parseFloat(form.amount),
         start_date: form.start_date,
         end_date: form.end_date,
         description: form.description || undefined
@@ -143,7 +152,7 @@ const onSubmit = async () => {
     } else {
       await limitsStore.createLimit({
         expense_category_id: props.expenseCategoryId,
-        amount: parseFloat(form.amount),
+        limit_amount: parseFloat(form.amount),
         start_date: form.start_date,
         end_date: form.end_date,
         description: form.description || undefined

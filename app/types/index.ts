@@ -62,7 +62,7 @@ export interface Category {
   name: string;
   description?: string;
   color?: string; // opcional no retorno
-  icon?: string;  // opcional no retorno
+  icon?: string; // opcional no retorno
   // A API usa 'active'; mantemos compat e também retemos 'is_active' para retrocompatibilidade interna
   active?: boolean;
   is_active: boolean;
@@ -196,9 +196,10 @@ export interface Limit {
   limit_id: string;
   user_id: string;
   expense_category_id: string;
-  amount: number;
+  limit_amount: number;
   start_date: string;
   end_date: string;
+  description?: string;
   is_active: boolean;
   category: Category;
   created_at: string;
@@ -207,7 +208,7 @@ export interface Limit {
 
 export interface CreateLimitRequest {
   expense_category_id: string;
-  amount: number;
+  limit_amount: number;
   start_date: string;
   end_date: string;
   description?: string;
@@ -215,7 +216,7 @@ export interface CreateLimitRequest {
 
 export interface UpdateLimitRequest {
   expense_category_id?: string;
-  amount?: number;
+  limit_amount?: number;
   start_date?: string;
   end_date?: string;
   description?: string;
