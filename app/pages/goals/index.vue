@@ -16,72 +16,12 @@
 
     <!-- Goals Grid -->
     <div v-else-if="goalsStore.goals.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <Card
+      <GoalCard
         v-for="goal in goalsStore.goals"
         :key="goal.goal_id"
-        class="hover:shadow-lg transition-shadow duration-200"
-      >
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h3 class="font-semibold text-gray-900 dark:text-white">
-                {{ goal.title }}
-              </h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400">
-                {{ formatDisplayDate(goal.start_date) }} - {{ formatDisplayDate(goal.end_date) }}
-              </p>
-            </div>
-            <Badge :variant="goal.is_active ? 'success' : 'default'" size="sm">
-              {{ goal.is_active ? 'Ativa' : 'Inativa' }}
-            </Badge>
-          </div>
-
-          <div class="space-y-3">
-            <!-- Progress Bar -->
-            <div>
-              <div class="flex justify-between text-sm mb-1">
-                <span class="text-gray-600 dark:text-gray-400">Progresso</span>
-                <span class="font-medium text-gray-900 dark:text-white">
-                  {{ calculatePercentage(goal.current_amount, goal.target_amount) }}%
-                </span>
-              </div>
-              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div
-                  class="bg-primary-600 h-2 rounded-full transition-all duration-300"
-                  :style="{ width: `${calculatePercentage(goal.current_amount, goal.target_amount)}%` }"
-                />
-              </div>
-            </div>
-
-            <!-- Amounts -->
-            <div class="space-y-2">
-              <div class="flex justify-between">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Arrecadado</span>
-                <span class="font-semibold text-gray-900 dark:text-white">
-                  {{ formatCurrency(goal.current_amount) }}
-                </span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Meta</span>
-                <span class="font-semibold text-gray-900 dark:text-white">
-                  {{ formatCurrency(goal.target_amount) }}
-                </span>
-              </div>
-              <div class="flex justify-between border-t border-gray-200 dark:border-gray-700 pt-2">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Restante</span>
-                <span class="font-semibold text-primary-600">
-                  {{ formatCurrency(goal.target_amount - goal.current_amount) }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Description -->
-            <p v-if="goal.description" class="text-sm text-gray-600 dark:text-gray-400">
-              {{ goal.description }}
-            </p>
-          </div>
-        </div>
-      </Card>
+        :goal="goal"
+        @select="navigateTo(`/goals/${goal.goal_id}`)"
+      />
     </div>
 
     <!-- Empty State -->
@@ -111,7 +51,6 @@ definePageMeta({
 })
 
 const goalsStore = useGoalsStore()
-const { formatCurrency, formatDisplayDate, calculatePercentage } = useApi()
 const { error: showError } = useNotifications()
 
 onMounted(async () => {
