@@ -18,7 +18,8 @@
               {{ goal.title }}
             </h1>
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              {{ formatDisplayDate(goal.start_date) }} - {{ formatDisplayDate(goal.end_date) }}
+              {{ formatDisplayDate(goal.start_date) }} -
+              {{ formatDisplayDate(goal.end_date) }}
             </p>
           </div>
           <Badge :variant="goal.is_active ? 'success' : 'default'">
@@ -28,18 +29,51 @@
       </template>
 
       <div class="space-y-8">
+        <!-- Informações da Meta -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Descrição -->
+          <div v-if="goal.description" class="space-y-2">
+            <h3 class="font-medium text-gray-900 dark:text-white">Descrição</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              {{ goal.description }}
+            </p>
+          </div>
+
+          <!-- Categoria -->
+          <div v-if="goal.category" class="space-y-2">
+            <h3 class="font-medium text-gray-900 dark:text-white">Categoria</h3>
+            <div class="flex items-center space-x-2">
+              <Icon name="lucide:tag" class="w-4 h-4 text-gray-500" />
+              <span
+                class="text-sm text-gray-600 dark:text-gray-400"
+                >{{ goal.category.name }}</span
+              >
+            </div>
+            <p
+              v-if="goal.category.description"
+              class="text-xs text-gray-500 dark:text-gray-500"
+            >
+              {{ goal.category.description }}
+            </p>
+          </div>
+        </div>
+
         <!-- Progresso -->
         <GoalProgress :goal="goal" :progress="progress" />
 
         <!-- Contribuir -->
         <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <h3 class="font-medium text-gray-900 dark:text-white mb-3">Contribuir para a meta</h3>
-          <ContributeForm :goalId="id" @contributed="reload" />
+          <h3 class="font-medium text-gray-900 dark:text-white mb-3">
+            Contribuir para a meta
+          </h3>
+          <ContributeForm :goal-id="id" @contributed="reload" />
         </div>
 
         <!-- Edição -->
         <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <h3 class="font-medium text-gray-900 dark:text-white mb-4">Editar meta</h3>
+          <h3 class="font-medium text-gray-900 dark:text-white mb-4">
+            Editar meta
+          </h3>
           <GoalForm v-if="goal" mode="edit" :goal="goal" @saved="onSaved" />
           <div v-if="goalsStore.error" class="text-center mt-3">
             <p class="text-sm text-error-600 dark:text-error-400">
@@ -49,7 +83,9 @@
         </div>
 
         <!-- Excluir -->
-        <div class="border border-error-200 dark:border-error-800 rounded-lg p-4 bg-error-50 dark:bg-error-900">
+        <div
+          class="border border-error-200 dark:border-error-800 rounded-lg p-4 bg-error-50 dark:bg-error-900"
+        >
           <div class="flex items-center justify-between">
             <div>
               <h3 class="font-medium text-error-900 dark:text-error-100">

@@ -117,12 +117,23 @@ const today = new Date()
 const defaultStart = today.toISOString().split('T')[0]
 const defaultEnd = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate()).toISOString().split('T')[0]
 
+// Função para converter datas para o formato YYYY-MM-DD esperado pelos inputs
+const formatDateForInput = (date: string | undefined): string => {
+  if (!date) return ''
+  // Se já está no formato YYYY-MM-DD, retorna como está
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) return date
+  // Caso contrário, converte para o formato correto
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return ''
+  return d.toISOString().split('T')[0]
+}
+
 const form = reactive({
   title: props.goal?.title || '',
   description: props.goal?.description || '',
   target_amount: props.goal ? String(props.goal.target_amount) : '',
-  start_date: props.goal?.start_date || defaultStart,
-  end_date: props.goal?.end_date || defaultEnd,
+  start_date: formatDateForInput(props.goal?.start_date) || defaultStart,
+  end_date: formatDateForInput(props.goal?.end_date) || defaultEnd,
   expense_category_id: (props.goal as any)?.expense_category_id || ''
 })
 
@@ -131,8 +142,8 @@ watch(() => props.goal, (g) => {
   form.title = g.title
   form.description = g.description || ''
   form.target_amount = String(g.target_amount)
-  form.start_date = g.start_date
-  form.end_date = g.end_date
+  form.start_date = formatDateForInput(g.start_date) || defaultStart
+  form.end_date = formatDateForInput(g.end_date) || defaultEnd
   form.expense_category_id = (g as any).expense_category_id || ''
 })
 

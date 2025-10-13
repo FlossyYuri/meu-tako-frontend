@@ -149,15 +149,18 @@ export interface TransferRequest {
 export interface Goal {
   goal_id: string;
   user_id: string;
+  expense_category_id?: string;
   title: string;
   description?: string;
   target_amount: number;
   current_amount: number;
   start_date: string;
   end_date: string;
+  status: 'active' | 'inactive';
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  category?: Category;
 }
 
 export interface CreateGoalRequest {

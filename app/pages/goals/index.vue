@@ -1,7 +1,10 @@
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <PageHeader title="Metas Financeiras" subtitle="Defina e acompanhe suas metas financeiras">
+    <PageHeader
+      title="Metas Financeiras"
+      subtitle="Defina e acompanhe suas metas financeiras"
+    >
       <template #actions>
         <Button to="/goals/new" variant="primary" icon="lucide:plus">
           Nova Meta
@@ -15,7 +18,10 @@
     </div>
 
     <!-- Goals Grid -->
-    <div v-else-if="goalsStore.goals.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div
+      v-else-if="goalsStore.goals.length > 0"
+      class="grid grid-cols-1 md:grid-cols-2 gap-6"
+    >
       <GoalCard
         v-for="goal in goalsStore.goals"
         :key="goal.goal_id"
@@ -39,7 +45,10 @@
     </div>
 
     <!-- Error -->
-    <div v-if="goalsStore.error" class="text-center text-error-600 dark:text-error-400">
+    <div
+      v-if="goalsStore.error"
+      class="text-center text-error-600 dark:text-error-400"
+    >
       {{ goalsStore.error }}
     </div>
   </div>

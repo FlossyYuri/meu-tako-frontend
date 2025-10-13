@@ -67,7 +67,7 @@ export const useGoalsStore = defineStore('goals', () => {
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
-      const idx = goals.value.findIndex(g => g.goal_id === goalId);
+      const idx = goals.value.findIndex((g) => g.goal_id === goalId);
       if (idx !== -1) goals.value[idx] = updated;
       return updated;
     } catch (err: any) {
@@ -87,7 +87,7 @@ export const useGoalsStore = defineStore('goals', () => {
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
-      goals.value = goals.value.filter(g => g.goal_id !== goalId);
+      goals.value = goals.value.filter((g) => g.goal_id !== goalId);
       return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao deletar meta';
@@ -97,7 +97,10 @@ export const useGoalsStore = defineStore('goals', () => {
     }
   };
 
-  const contributeToGoal = async (goalId: string, payload: ContributeToGoalRequest) => {
+  const contributeToGoal = async (
+    goalId: string,
+    payload: ContributeToGoalRequest
+  ) => {
     isLoading.value = true;
     error.value = null;
     try {
@@ -107,7 +110,7 @@ export const useGoalsStore = defineStore('goals', () => {
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
-      const idx = goals.value.findIndex(g => g.goal_id === goalId);
+      const idx = goals.value.findIndex((g) => g.goal_id === goalId);
       if (idx !== -1) goals.value[idx] = updated;
       return updated;
     } catch (err: any) {

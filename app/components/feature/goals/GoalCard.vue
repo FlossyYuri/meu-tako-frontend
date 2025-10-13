@@ -1,5 +1,8 @@
 <template>
-  <Card class="hover:shadow-lg transition-shadow duration-200 cursor-pointer" @click="emit('select', goal)">
+  <Card
+    class="hover:shadow-lg transition-shadow duration-200 cursor-pointer"
+    @click="emit('select', goal)"
+  >
     <div class="p-6">
       <div class="flex items-center justify-between mb-4">
         <div>
@@ -7,7 +10,8 @@
             {{ goal.title }}
           </h3>
           <p class="text-sm text-gray-500 dark:text-gray-400">
-            {{ formatDisplayDate(goal.start_date) }} - {{ formatDisplayDate(goal.end_date) }}
+            {{ formatDisplayDate(goal.start_date) }} -
+            {{ formatDisplayDate(goal.end_date) }}
           </p>
         </div>
         <Badge :variant="goal.is_active ? 'success' : 'default'" size="sm">
@@ -48,7 +52,19 @@
           </div>
         </div>
 
-        <p v-if="goal.description" class="text-sm text-gray-600 dark:text-gray-400">
+        <!-- Categoria -->
+        <div v-if="goal.category" class="flex items-center space-x-1">
+          <Icon name="lucide:tag" class="w-3 h-3 text-gray-400" />
+          <span
+            class="text-xs text-gray-500 dark:text-gray-400"
+            >{{ goal.category.name }}</span
+          >
+        </div>
+
+        <p
+          v-if="goal.description"
+          class="text-sm text-gray-600 dark:text-gray-400"
+        >
           {{ goal.description }}
         </p>
       </div>
