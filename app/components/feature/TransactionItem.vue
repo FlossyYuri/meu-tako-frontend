@@ -117,15 +117,18 @@ const amountClass = computed(() => {
 })
 
 const rawAmount = computed(() => {
-  // Transação pode vir com amount string, e nested amount também
-  const tAmount = Number((props.transaction as any).amount)
-  if (!isNaN(tAmount)) return tAmount
-  // fallback a nested
-  const eAmount = Number((props.transaction as any).expense?.amount)
-  if (!isNaN(eAmount)) return props.transaction.type === 'expense' ? -Math.abs(eAmount) : eAmount
-  const iAmount = Number((props.transaction as any).income?.amount)
-  if (!isNaN(iAmount)) return props.transaction.type === 'income' ? Math.abs(iAmount) : iAmount
-  return 0
+  // Try to get amount from nested structure first
+  if (props.transaction.expense?.amount) {
+    const amount = parseFloat(props.transaction.expense.amount);
+    return props.transaction.type === 'expense' ? -Math.abs(amount) : amount;
+  }
+  if (props.transaction.income?.amount) {
+    const amount = parseFloat(props.transaction.income.amount);
+    return props.transaction.type === 'income' ? Math.abs(amount) : amount;
+  }
+  // Fallback to main amount
+  const tAmount = parseFloat(props.transaction.amount.toString());
+  return isNaN(tAmount) ? 0 : tAmount;
 })
 
 const displayAmount = computed(() => formatCurrency(Math.abs(rawAmount.value)))
@@ -158,46 +161,42 @@ const badgeVariant = computed(() => {
 
 const titleText = computed(() => {
   return (
-    (props.transaction as any).description ||
-    (props.transaction as any).expense?.description ||
-    (props.transaction as any).income?.description ||
+    props.transaction.expense?.description ||
+    props.transaction.income?.description ||
     typeLabel.value
   )
 })
 
 const resolvedDate = computed<string>(() => {
-  // Preferir a data da própria transação; se inválida, usar nested
-  const tDate = (props.transaction as any).date
-  const tFormatted = formatDisplayDate(tDate)
-  if (tFormatted !== 'Data inválida' && tFormatted) return tFormatted
-
-  const eDate = (props.transaction as any).expense?.date
-  if (eDate) {
-    const f = formatDisplayDate(eDate)
-    if (f !== 'Data inválida') return f
+  // Try nested dates first
+  if (props.transaction.expense?.date) {
+    const f = formatDisplayDate(props.transaction.expense.date);
+    if (f !== 'Data inválida') return f;
   }
 
-  const iDate = (props.transaction as any).income?.date
-  if (iDate) {
-    const f = formatDisplayDate(iDate)
-    if (f !== 'Data inválida') return f
+  if (props.transaction.income?.date) {
+    const f = formatDisplayDate(props.transaction.income.date);
+    if (f !== 'Data inválida') return f;
   }
 
-  // Fallback para created_at se houver
-  const created = (props.transaction as any).created_at
+  // Fallback to main date
+  const tFormatted = formatDisplayDate(props.transaction.date);
+  if (tFormatted !== 'Data inválida' && tFormatted) return tFormatted;
+
+  // Final fallback to created_at
+  const created = props.transaction.created_at;
   if (created) {
-    const f = formatDisplayDate(created)
-    if (f !== 'Data inválida') return f
+    const f = formatDisplayDate(created);
+    if (f !== 'Data inválida') return f;
   }
-  return '—'
+  return '—';
 })
 
 const formattedDate = computed(() => resolvedDate.value)
 
 const walletLabel = computed(() => {
   if (!props.showWallet) return ''
-  const inlineWallet = (props.transaction as any).wallet?.wallet_name
-  if (inlineWallet) return inlineWallet
+  if (props.transaction.wallet?.wallet_name) return props.transaction.wallet.wallet_name
   if (props.walletName) return props.walletName
   const w = walletsStore.wallets.find(w => w.wallet_id === props.transaction.wallet_id)
   return w?.wallet_name || ''
@@ -205,22 +204,25 @@ const walletLabel = computed(() => {
 
 const categoryLabel = computed(() => {
   if (!props.showCategory) return ''
-  const cat = (props.transaction as any).category
-  if (cat?.name) return cat.name
-  // tentar deduzir via stores
-  const eCatId = (props.transaction as any).expense?.expense_category_id
-  if (eCatId) return categoriesStore.getExpenseCategoryById(eCatId)?.name || ''
-  const iCatId = (props.transaction as any).income?.income_category_id
-  if (iCatId) return categoriesStore.getIncomeCategoryById(iCatId)?.name || ''
-  return ''
+
+  // Try to get category from nested structure
+  const eCatId = props.transaction.expense?.expense_category_id;
+  if (eCatId) return categoriesStore.getExpenseCategoryById(eCatId)?.name || '';
+
+  const iCatId = props.transaction.income?.income_category_id;
+  if (iCatId) return categoriesStore.getIncomeCategoryById(iCatId)?.name || '';
+
+  return '';
 })
 
 const statusLabel = computed(() => {
-  const e = (props.transaction as any).expense
-  if (e && typeof e.paid === 'boolean') return e.paid ? 'Pago' : 'Pendente'
-  const i = (props.transaction as any).income
-  if (i && typeof i.received === 'boolean') return i.received ? 'Recebido' : 'Pendente'
-  return ''
+  if (props.transaction.expense && typeof props.transaction.expense.paid === 'boolean') {
+    return props.transaction.expense.paid ? 'Pago' : 'Pendente';
+  }
+  if (props.transaction.income && typeof props.transaction.income.received === 'boolean') {
+    return props.transaction.income.received ? 'Recebido' : 'Pendente';
+  }
+  return '';
 })
 
 const statusVariant = computed(() => {

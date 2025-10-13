@@ -96,8 +96,8 @@
       <Button
         type="button"
         variant="outline"
-        @click="$emit('cancel')"
         :disabled="isLoading"
+        @click="$emit('cancel')"
       >
         Cancelar
       </Button>

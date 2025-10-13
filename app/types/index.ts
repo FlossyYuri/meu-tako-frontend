@@ -85,13 +85,44 @@ export interface Transaction {
   transaction_id: string;
   user_id: string;
   wallet_id: string;
-  amount: number;
-  description?: string;
-  date: string;
+  expense_id?: string | null;
+  income_id?: string | null;
+  amount: string | number;
   type: 'income' | 'expense' | 'transfer';
-  category?: Category;
+  date: string;
   created_at: string;
   updated_at: string;
+  wallet?: {
+    wallet_id: string;
+    user_id: string;
+    wallet_name: string;
+    balance: string;
+    is_default: boolean;
+    created_at: string;
+    updated_at: string;
+  };
+  income?: {
+    income_id: string;
+    user_id: string;
+    income_category_id: string;
+    received: boolean;
+    amount: string;
+    date: string;
+    description?: string;
+    created_at: string;
+    active: boolean;
+  } | null;
+  expense?: {
+    expense_id: string;
+    user_id: string;
+    expense_category_id: string;
+    paid: boolean;
+    amount: string;
+    date: string;
+    description?: string;
+    created_at: string;
+    active: boolean;
+  } | null;
 }
 
 export interface Income {

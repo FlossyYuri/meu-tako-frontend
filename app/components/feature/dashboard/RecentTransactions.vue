@@ -59,7 +59,7 @@
               <p
                 class="text-sm font-medium text-gray-900 dark:text-white truncate"
               >
-                {{ transaction.description || getDefaultDescription(transaction.type) }}
+                {{ getTransactionDescription(transaction) }}
               </p>
               <Badge
                 :variant="getTransactionBadgeVariant(transaction.type)"
@@ -72,13 +72,15 @@
               class="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400"
             >
               <Icon name="lucide:calendar" class="w-3 h-3" />
-              <span>{{ formatRelativeTime(transaction.date) }}</span>
               <span
-                v-if="transaction.category"
+                >{{ formatRelativeTime(getTransactionDate(transaction)) }}</span
+              >
+              <span
+                v-if="getTransactionWallet(transaction)"
                 class="flex items-center space-x-1"
               >
-                <Icon name="lucide:tag" class="w-3 h-3" />
-                <span>{{ transaction.category.name }}</span>
+                <Icon name="lucide:wallet" class="w-3 h-3" />
+                <span>{{ getTransactionWallet(transaction) }}</span>
               </span>
             </div>
           </div>
@@ -93,8 +95,7 @@
             ]"
           >
             {{ getAmountPrefix(transaction.type)
-
-            }}{{ formatCurrency(Math.abs(transaction.amount)) }}
+            }}{{ formatCurrency(Math.abs(getTransactionAmount(transaction))) }}
           </p>
         </div>
       </div>
@@ -127,6 +128,8 @@
 </template>
 
 <script setup lang="ts">
+import type { Transaction } from '~/types';
+
 interface Props {
   recentTransactions: Transaction[];
   isLoading: boolean;
@@ -246,5 +249,42 @@ const getDefaultDescription = (type: string): string => {
     default:
       return 'Transação';
   }
+};
+
+// Helper functions for nested transaction structure
+const getTransactionDescription = (transaction: any): string => {
+  if (transaction.expense?.description) {
+    return transaction.expense.description;
+  }
+  if (transaction.income?.description) {
+    return transaction.income.description;
+  }
+  return getDefaultDescription(transaction.type);
+};
+
+const getTransactionDate = (transaction: any): string => {
+  if (transaction.expense?.date) {
+    return transaction.expense.date;
+  }
+  if (transaction.income?.date) {
+    return transaction.income.date;
+  }
+  return transaction.date;
+};
+
+const getTransactionAmount = (transaction: any): number => {
+  // Try to get amount from nested structure first
+  if (transaction.expense?.amount) {
+    return parseFloat(transaction.expense.amount);
+  }
+  if (transaction.income?.amount) {
+    return parseFloat(transaction.income.amount);
+  }
+  // Fallback to main amount
+  return parseFloat(transaction.amount.toString());
+};
+
+const getTransactionWallet = (transaction: any): string => {
+  return transaction.wallet?.wallet_name || '';
 };
 </script>
