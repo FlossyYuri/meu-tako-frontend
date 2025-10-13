@@ -392,8 +392,8 @@ const { success, error: showError } = useNotifications()
 
 // Tema global
 const themeStore = useThemeStore()
-const { mode, setTheme, isDark } = useTheme()
-const theme = computed(() => mode.value)
+const { themeStore: themeComposable } = useTheme()
+const theme = computed(() => themeStore.mode)
 
 // State
 const activeTab = ref('profile')
@@ -525,6 +525,9 @@ const deleteAccount = async () => {
 
 // Initialize form with user data
 onMounted(() => {
+  // Initialize theme store
+  themeStore.initializeTheme()
+
   if (authStore.user) {
     profileForm.name = authStore.user.name
     profileForm.email = authStore.user.email

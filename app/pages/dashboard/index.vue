@@ -5,8 +5,8 @@
       <template #actions>
         <Button
           variant="outline"
-          @click="refreshDashboard"
           :disabled="isLoading"
+          @click="refreshDashboard"
         >
           <Icon
             name="lucide:refresh-cw"
@@ -49,7 +49,7 @@
     </div>
 
     <!-- Dashboard Content -->
-    <div v-else class="p-6 space-y-6">
+    <div v-else class="py-6 space-y-6">
       <!-- Summary Cards -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Dashboard Summary -->
