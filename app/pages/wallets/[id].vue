@@ -17,17 +17,25 @@
     <WalletDetails
       v-else-if="wallet"
       :wallet="wallet"
-      @edit="goEdit"
+      @edit="openEditModal"
       @set-default="onSetDefault"
       @delete="onDelete"
     />
 
     <div v-else class="text-center py-12">
       <Icon name="lucide:wallet" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
-      <p class="text-gray-500 dark:text-gray-400">
-        Carteira não encontrada.
-      </p>
+      <p class="text-gray-500 dark:text-gray-400">Carteira não encontrada.</p>
     </div>
+
+    <!-- Edit Wallet Modal -->
+    <WalletEditModal
+      v-model:is-open="showEditModal"
+      :wallet-id="id"
+      :wallet-name="wallet?.wallet_name || ''"
+      :loading="walletsStore.isLoading"
+      @submit="onUpdateWallet"
+      @close="closeEditModal"
+    />
   </div>
 </template>
 
@@ -44,6 +52,9 @@ const id = route.params.id as string
 const walletsStore = useWalletsStore()
 const { success, error: showError } = useNotifications()
 
+// Modal state
+const showEditModal = ref(false)
+
 const wallet = computed(() => walletsStore.getWalletById(id) || walletsStore.currentWallet)
 
 const load = async () => {
@@ -57,7 +68,24 @@ const load = async () => {
   }
 }
 
-const goEdit = () => navigateTo(`/wallets/${id}/edit`)
+const openEditModal = (walletId?: string) => {
+  showEditModal.value = true
+}
+
+const closeEditModal = () => {
+  showEditModal.value = false
+}
+
+const onUpdateWallet = async (name: string) => {
+  try {
+    walletsStore.clearError()
+    await walletsStore.updateWallet(id, { wallet_name: name })
+    success('Carteira atualizada com sucesso!')
+    closeEditModal()
+  } catch (err: any) {
+    showError('Erro ao atualizar carteira', err?.message || 'Tente novamente mais tarde')
+  }
+}
 
 const onSetDefault = async () => {
   try {

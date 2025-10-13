@@ -1,22 +1,34 @@
 <template>
-  <Card class="hover:shadow-lg transition-shadow duration-200 cursor-pointer" @click="emit('select', wallet)">
+  <Card
+    class="hover:shadow-lg transition-shadow duration-200 cursor-pointer"
+    @click="emit('select', wallet)"
+  >
     <div class="p-6">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
+          <div
+            class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center"
+          >
             <Icon name="lucide:wallet" class="w-5 h-5 text-primary-600" />
           </div>
           <div>
             <h3 class="font-semibold text-gray-900 dark:text-white">
               {{ wallet.wallet_name }}
             </h3>
-            <p v-if="showCreatedAt" class="text-sm text-gray-500 dark:text-gray-400">
+            <p
+              v-if="showCreatedAt"
+              class="text-sm text-gray-500 dark:text-gray-400"
+            >
               {{ formatDisplayDate(wallet.created_at) }}
             </p>
           </div>
         </div>
         <div class="flex items-center space-x-2">
-          <Badge v-if="wallet.is_default && showDefaultBadge" variant="success" size="sm">
+          <Badge
+            v-if="wallet.is_default && showDefaultBadge"
+            variant="success"
+            size="sm"
+          >
             Padrão
           </Badge>
 
@@ -25,7 +37,10 @@
               class="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
               @click.stop="toggleMenu"
             >
-              <Icon name="lucide:more-horizontal" class="w-4 h-4 text-gray-500" />
+              <Icon
+                name="lucide:more-horizontal"
+                class="w-4 h-4 text-gray-500"
+              />
             </button>
 
             <Transition
@@ -43,10 +58,10 @@
                 <div class="py-1">
                   <button
                     class="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                    @click.stop="emit('edit', wallet)"
+                    @click.stop="emit('view', wallet)"
                   >
-                    <Icon name="lucide:edit" class="w-4 h-4" />
-                    <span>Editar</span>
+                    <Icon name="lucide:eye" class="w-4 h-4" />
+                    <span>Visualizar</span>
                   </button>
 
                   <button
@@ -75,14 +90,21 @@
 
       <div class="space-y-2">
         <div class="flex items-center justify-between">
-          <span class="text-sm text-gray-500 dark:text-gray-400">Saldo atual</span>
+          <span class="text-sm text-gray-500 dark:text-gray-400"
+            >Saldo atual</span
+          >
           <span class="text-2xl font-bold text-gray-900 dark:text-white">
             {{ formatCurrency(wallet.balance) }}
           </span>
         </div>
 
-        <div v-if="showUpdatedAt" class="flex items-center justify-between text-sm">
-          <span class="text-gray-500 dark:text-gray-400">Última atualização</span>
+        <div
+          v-if="showUpdatedAt"
+          class="flex items-center justify-between text-sm"
+        >
+          <span class="text-gray-500 dark:text-gray-400"
+            >Última atualização</span
+          >
           <span class="text-gray-700 dark:text-gray-300">
             {{ formatRelativeTime(wallet.updated_at) }}
           </span>
@@ -112,7 +134,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   select: [wallet: Wallet]
-  edit: [wallet: Wallet]
+  view: [wallet: Wallet]
   'set-default': [wallet: Wallet]
   delete: [wallet: Wallet]
 }>()

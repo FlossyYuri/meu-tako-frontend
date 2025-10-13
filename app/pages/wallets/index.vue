@@ -3,14 +3,17 @@
     <!-- Header -->
     <PageHeader title="Carteiras" subtitle="Gerencie suas carteiras e saldos">
       <template #actions>
-        <Button to="/wallets/new" variant="primary" icon="lucide:plus">
+        <Button @click="openCreateModal" variant="primary" icon="lucide:plus">
           Nova Carteira
         </Button>
       </template>
     </PageHeader>
 
     <!-- Loading State with Skeletons -->
-    <div v-if="walletsStore.isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div
+      v-if="walletsStore.isLoading"
+      class="grid grid-cols-1 md:grid-cols-2 gap-6"
+    >
       <Card v-for="i in 6" :key="i" class="p-6">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center space-x-3">
@@ -36,7 +39,10 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="walletsStore.wallets.length === 0" class="text-center py-12">
+    <div
+      v-else-if="walletsStore.wallets.length === 0"
+      class="text-center py-12"
+    >
       <Icon name="lucide:wallet" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
         Nenhuma carteira encontrada
@@ -44,26 +50,29 @@
       <p class="text-gray-500 dark:text-gray-400 mb-6">
         Crie sua primeira carteira para começar a gerenciar suas finanças
       </p>
-      <Button to="/wallets/new" variant="primary" icon="lucide:plus">
+      <Button @click="openCreateModal" variant="primary" icon="lucide:plus">
         Criar Primeira Carteira
       </Button>
     </div>
 
     <!-- Wallets Grid -->
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <WalletCard
         v-for="wallet in walletsStore.wallets"
         :key="wallet.wallet_id"
         :wallet="wallet"
         @select="onSelect"
-        @edit="onEdit"
+        @view="onView"
         @set-default="onSetDefault"
         @delete="onDelete"
       />
     </div>
 
     <!-- Total Balance Summary -->
-    <Card v-if="walletsStore.wallets.length > 0" class="bg-gradient-to-r from-primary-600 to-primary-700 text-white">
+    <Card
+      v-if="walletsStore.wallets.length > 0"
+      class="bg-gradient-to-r from-primary-600 to-primary-700 text-white"
+    >
       <div class="p-6">
         <div class="flex items-center justify-between">
           <div>
@@ -79,9 +88,20 @@
       </div>
     </Card>
 
-    <div v-if="walletsStore.error" class="text-center text-error-600 dark:text-error-400">
+    <div
+      v-if="walletsStore.error"
+      class="text-center text-error-600 dark:text-error-400"
+    >
       {{ walletsStore.error }}
     </div>
+
+    <!-- Create Wallet Modal -->
+    <WalletCreateModal
+      v-model:is-open="showCreateModal"
+      :loading="walletsStore.isLoading"
+      @submit="onCreateWallet"
+      @close="closeCreateModal"
+    />
   </div>
 </template>
 
@@ -94,13 +114,36 @@ const walletsStore = useWalletsStore()
 const { formatCurrency } = useApi()
 const { success, error: showError } = useNotifications()
 
+// Modal state
+const showCreateModal = ref(false)
+
 const onSelect = (wallet: any) => {
   walletsStore.setCurrentWallet(wallet)
   navigateTo(`/wallets/${wallet.wallet_id}`)
 }
 
-const onEdit = (wallet: any) => {
-  navigateTo(`/wallets/${wallet.wallet_id}/edit`)
+const onView = (wallet: any) => {
+  navigateTo(`/wallets/${wallet.wallet_id}`)
+}
+
+// Modal functions
+const openCreateModal = () => {
+  showCreateModal.value = true
+}
+
+const closeCreateModal = () => {
+  showCreateModal.value = false
+}
+
+const onCreateWallet = async (name: string) => {
+  try {
+    walletsStore.clearError()
+    await walletsStore.createWallet({ wallet_name: name })
+    success('Carteira criada com sucesso!')
+    closeCreateModal()
+  } catch (err: any) {
+    showError('Erro ao criar carteira', err?.message || 'Tente novamente mais tarde')
+  }
 }
 
 const onSetDefault = async (wallet: any) => {
