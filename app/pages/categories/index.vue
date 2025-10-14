@@ -196,6 +196,15 @@
                 {{ c.active ? 'Desativar' : 'Ativar' }}
               </Button>
               <Button
+                v-if="categoryHasLimit(c.category_id)"
+                size="sm"
+                variant="primary"
+                icon="lucide:bar-chart-3"
+                @click="openLimitStatus(c.category_id)"
+              >
+                Status do limite
+              </Button>
+              <Button
                 size="sm"
                 variant="outline"
                 icon="lucide:shield"
@@ -228,6 +237,12 @@
                   @click="onToggleActive(c.category_id)"
                 />
                 <ActionItem
+                  v-if="categoryHasLimit(c.category_id)"
+                  label="Status do limite"
+                  icon="lucide:bar-chart-3"
+                  @click="openLimitStatus(c.category_id)"
+                />
+                <ActionItem
                   :label="categoryHasLimit(c.category_id) ? 'Editar limite' : 'Definir limite'"
                   icon="lucide:shield"
                   @click="openLimit(c.category_id)"
@@ -252,27 +267,33 @@
 
     <!-- Modais -->
     <CategoryModal
-      :isOpen="showCategoryModal"
+      :is-open="showCategoryModal"
       :type="modalType"
       :category="editingCategory"
-      @update:isOpen="showCategoryModal = $event"
+      @update:is-open="showCategoryModal = $event"
       @saved="onCategorySaved"
     />
     <LimitModal
-      :isOpen="showLimitModal"
-      :expenseCategoryId="currentExpenseCategoryId"
-      @update:isOpen="showLimitModal = $event"
+      :is-open="showLimitModal"
+      :expense-category-id="currentExpenseCategoryId"
+      @update:is-open="showLimitModal = $event"
       @saved="onLimitSaved"
+    />
+    <LimitStatusModal
+      :is-open="showLimitStatusModal"
+      :expense-category-id="currentExpenseCategoryId"
+      @update:is-open="showLimitStatusModal = $event"
+      @edit-limit="onEditLimitFromStatus"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import type { Category } from '~/types';
+
 definePageMeta({
   middleware: 'auth'
 })
-
-import type { Category } from '~/types';
 
 const categoriesStore = useCategoriesStore()
 const limitsStore = useLimitsStore()
@@ -288,6 +309,7 @@ const modalType = ref<'income' | 'expense'>('income')
 const editingCategory = ref<Category | null>(null)
 
 const showLimitModal = ref(false)
+const showLimitStatusModal = ref(false)
 const currentExpenseCategoryId = ref('')
 
 // Computed filtros
@@ -376,6 +398,11 @@ const openLimit = (expenseCategoryId: string) => {
   showLimitModal.value = true
 }
 
+const openLimitStatus = (expenseCategoryId: string) => {
+  currentExpenseCategoryId.value = expenseCategoryId
+  showLimitStatusModal.value = true
+}
+
 const onCategorySaved = async () => {
   if (modalType.value === 'income') await loadIncomes()
   else await loadExpenses()
@@ -383,6 +410,11 @@ const onCategorySaved = async () => {
 
 const onLimitSaved = async () => {
   await limitsStore.fetchLimits()
+}
+
+const onEditLimitFromStatus = (categoryId: string) => {
+  currentExpenseCategoryId.value = categoryId
+  showLimitModal.value = true
 }
 
 // Init

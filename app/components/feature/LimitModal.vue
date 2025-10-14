@@ -5,20 +5,54 @@
     size="md"
     @update:is-open="emit('update:isOpen', $event)"
   >
+    <!-- Informações da Categoria -->
+    <div
+      v-if="categoryInfo"
+      class="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
+    >
+      <div class="flex items-center gap-3">
+        <div
+          class="w-10 h-10 rounded-lg flex items-center justify-center"
+          :style="{ backgroundColor: categoryInfo.color || '#6B7280' }"
+        >
+          <Icon
+            :name="categoryInfo.icon || 'lucide:tag'"
+            class="w-5 h-5 text-white"
+          />
+        </div>
+        <div class="flex-1">
+          <h3 class="font-semibold text-gray-900 dark:text-white">
+            {{ categoryInfo.name }}
+          </h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            {{ categoryInfo.description || 'Sem descrição' }}
+          </p>
+          <div class="flex items-center gap-2 mt-2">
+            <Badge
+              :variant="categoryInfo.active ? 'success' : 'warning'"
+              size="sm"
+            >
+              {{ categoryInfo.active ? 'Ativa' : 'Inativa' }}
+            </Badge>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <form class="space-y-4" @submit.prevent="onSubmit">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
-          v-model="form.amount"
+          v-model="form.limit_amount"
           type="number"
           label="Valor do limite"
           :step="0.01"
           :min="0.01"
           required
-          :error="errors.amount"
+          :error="errors.limit_amount"
         />
         <Input
           v-model="form.start_date"
-          type="date"
+          type="text"
           label="Início"
           required
           :error="errors.start_date"
@@ -27,7 +61,7 @@
 
       <Input
         v-model="form.end_date"
-        type="date"
+        type="text"
         label="Fim"
         required
         :error="errors.end_date"
@@ -73,6 +107,7 @@ const emit = defineEmits<{
 }>()
 
 const limitsStore = useLimitsStore()
+const categoriesStore = useCategoriesStore()
 const { success, error: showError } = useNotifications()
 
 const today = new Date().toISOString().split('T')[0]
@@ -96,31 +131,42 @@ const currentLimit = computed(() =>
   limitsStore.limits.find(l => l.expense_category_id === props.expenseCategoryId)
 )
 
+const categoryInfo = computed(() => {
+  return categoriesStore.expenseCategories.find(c => c.category_id === props.expenseCategoryId)
+})
+
 const limitTitle = computed(() => currentLimit.value ? 'Editar Limite' : 'Definir Limite')
 
 const isValid = computed(() => {
-  return !!form.amount && !!form.start_date && !!form.end_date &&
-    !errors.amount && !errors.start_date && !errors.end_date
+  return !!form.limit_amount && !!form.start_date && !!form.end_date &&
+    !errors.limit_amount && !errors.start_date && !errors.end_date
 })
 
 watch(() => props.isOpen, async (open) => {
   if (open) {
     try {
+      // Carregar categorias se necessário
+      if (!categoriesStore.expenseCategories.length) {
+        await categoriesStore.fetchExpenseCategories()
+      }
+
       if (!limitsStore.limits.length) await limitsStore.fetchLimits()
+
       // Preencher se já tiver limite
       if (currentLimit.value) {
-        form.amount = String(currentLimit.value.amount)
+        form.limit_amount = String(currentLimit.value.limit_amount)
         form.start_date = currentLimit.value.start_date
         form.end_date = currentLimit.value.end_date
-        form.description = (currentLimit.value as any).description || ''
+        form.description = (currentLimit.value as any).description ?? ''
       } else {
-        form.amount = ''
+        form.limit_amount = ''
         form.start_date = today
         form.end_date = endOfMonth
         form.description = ''
       }
-    } catch (err: any) {
-      showError('Erro ao carregar limite', err?.message)
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
+      showError('Erro ao carregar limite', errorMessage)
     }
   }
 })
@@ -128,8 +174,8 @@ watch(() => props.isOpen, async (open) => {
 const validate = () => {
   Object.keys(errors).forEach(k => (errors[k as keyof typeof errors] = ''))
   let ok = true
-  const val = parseFloat(form.amount)
-  if (!form.amount || isNaN(val) || val <= 0) { errors.amount = 'Valor inválido'; ok = false }
+  const val = parseFloat(form.limit_amount)
+  if (!form.limit_amount || isNaN(val) || val <= 0) { errors.limit_amount = 'Valor inválido'; ok = false }
   if (!form.start_date) { errors.start_date = 'Data inicial é obrigatória'; ok = false }
   if (!form.end_date) { errors.end_date = 'Data final é obrigatória'; ok = false }
   if (form.start_date && form.end_date && new Date(form.end_date) < new Date(form.start_date)) {
@@ -138,13 +184,43 @@ const validate = () => {
   return ok
 }
 
+const formatDate = (dateString: string) => {
+  if (!dateString || dateString.trim() === '') return 'Data não disponível'
+
+  // Tentar diferentes formatos de data
+  let date: Date
+
+  // Se já é um objeto Date válido
+  if (typeof dateString === 'object' && dateString instanceof Date && !isNaN(dateString.getTime())) {
+    date = dateString
+  } else {
+    // Tentar criar um novo Date
+    date = new Date(dateString)
+
+    // Se falhar, tentar parsear como ISO
+    if (isNaN(date.getTime())) {
+      // Tentar formatos comuns
+      const isoDate = dateString.replace(/[^\d-]/g, '-')
+      date = new Date(isoDate)
+    }
+  }
+
+  if (isNaN(date.getTime())) return 'Data inválida'
+
+  return date.toLocaleDateString('pt-BR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+}
+
 const onSubmit = async () => {
   if (!validate()) return
   try {
     if (currentLimit.value) {
       await limitsStore.updateLimit(currentLimit.value.limit_id, {
         expense_category_id: props.expenseCategoryId,
-        limit_amount: parseFloat(form.amount),
+        limit_amount: parseFloat(form.limit_amount),
         start_date: form.start_date,
         end_date: form.end_date,
         description: form.description || undefined
@@ -152,7 +228,7 @@ const onSubmit = async () => {
     } else {
       await limitsStore.createLimit({
         expense_category_id: props.expenseCategoryId,
-        limit_amount: parseFloat(form.amount),
+        limit_amount: parseFloat(form.limit_amount),
         start_date: form.start_date,
         end_date: form.end_date,
         description: form.description || undefined
@@ -161,8 +237,9 @@ const onSubmit = async () => {
     success('Limite salvo com sucesso')
     emit('saved')
     emit('update:isOpen', false)
-  } catch (err: any) {
-    showError('Erro ao salvar limite', err?.message)
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
+    showError('Erro ao salvar limite', errorMessage)
   }
 }
 </script>
