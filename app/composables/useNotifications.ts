@@ -12,14 +12,23 @@ export const useNotifications = () => {
   };
 
   const warning = (title: string, message?: string) => {
-    return toast.warning?.(title, { description: message }) ?? toast(title, { description: message });
+    return (
+      toast.warning?.(title, { description: message }) ??
+      toast(title, { description: message })
+    );
   };
 
   const info = (title: string, message?: string) => {
-    return toast.info?.(title, { description: message }) ?? toast(title, { description: message });
+    return (
+      toast.info?.(title, { description: message }) ??
+      toast(title, { description: message })
+    );
   };
 
-  const showApiError = (err: any, defaultMessage = 'Ocorreu um erro inesperado') => {
+  const showApiError = (
+    err: any,
+    defaultMessage = 'Ocorreu um erro inesperado'
+  ) => {
     const msg = err?.data?.message || err?.message || defaultMessage;
     return error('Erro', msg);
   };
@@ -27,11 +36,16 @@ export const useNotifications = () => {
   // API compatível (mantemos assinaturas esperadas)
   const addNotification = (n: Omit<Notification, 'id'>) => {
     switch (n.type) {
-      case 'success': return success(n.title, n.message);
-      case 'error': return error(n.title, n.message);
-      case 'warning': return warning(n.title, n.message);
-      case 'info': return info(n.title, n.message);
-      default: return toast(n.title, { description: n.message });
+      case 'success':
+        return success(n.title, n.message);
+      case 'error':
+        return error(n.title, n.message);
+      case 'warning':
+        return warning(n.title, n.message);
+      case 'info':
+        return info(n.title, n.message);
+      default:
+        return toast(n.title, { description: n.message });
     }
   };
 

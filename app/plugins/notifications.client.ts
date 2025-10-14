@@ -1,5 +1,21 @@
 // Plugin de notificações usando vue-sonner
-export default defineNuxtPlugin(() => {
-  // O vue-sonner é importado automaticamente pelo composable useNotifications
-  // Não precisamos registrar o Toaster aqui
+import { Toaster } from 'vue-sonner';
+
+export default defineNuxtPlugin((nuxtApp) => {
+  // Registrar o componente Toaster globalmente
+  nuxtApp.vueApp.component('Toaster', Toaster);
+
+  // Configurar tema reativo para o toast
+  const themeStore = useThemeStore();
+
+  // Inicializar o tema
+  themeStore.initializeTheme();
+
+  // Fornecer o tema reativo para uso global
+  nuxtApp.provide(
+    'toastTheme',
+    computed(() => {
+      return themeStore.isDarkMode ? 'dark' : 'light';
+    })
+  );
 });
