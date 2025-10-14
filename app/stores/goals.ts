@@ -153,7 +153,7 @@ export const useGoalsStore = defineStore('goals', () => {
           baseURL: useRuntimeConfig().public.apiBase,
         }
       );
-      return response.contributions;
+      return response;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao carregar contribuições';
       throw err;
