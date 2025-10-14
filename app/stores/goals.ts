@@ -5,6 +5,8 @@ import type {
   UpdateGoalRequest,
   ContributeToGoalRequest,
   GoalProgress,
+  GoalContribution,
+  GoalWithContributions,
 } from '~/types';
 
 export const useGoalsStore = defineStore('goals', () => {
@@ -104,15 +106,27 @@ export const useGoalsStore = defineStore('goals', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const updated = await $fetch<Goal>(`/goals/${goalId}/contribute`, {
+      const response = await $fetch<{
+        contribution_id: string;
+        goal_id: string;
+        amount: number;
+        description?: string;
+        contributed_at: string;
+      }>(`/goals/${goalId}/contribute`, {
         method: 'PATCH',
         body: payload,
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
+
+      // Atualizar a meta local com o novo valor
       const idx = goals.value.findIndex((g) => g.goal_id === goalId);
-      if (idx !== -1) goals.value[idx] = updated;
-      return updated;
+      if (idx !== -1 && goals.value[idx]) {
+        goals.value[idx].current_amount += payload.amount;
+        goals.value[idx].updated_at = response.contributed_at;
+      }
+
+      return response;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao contribuir para a meta';
       throw err;
@@ -128,6 +142,46 @@ export const useGoalsStore = defineStore('goals', () => {
     });
   };
 
+  const getGoalContributions = async (goalId: string) => {
+    isLoading.value = true;
+    error.value = null;
+    try {
+      const response = await $fetch<{ contributions: GoalContribution[] }>(
+        `/goals/${goalId}/contributions`,
+        {
+          headers: { Authorization: `Bearer ${useAuthStore().token}` },
+          baseURL: useRuntimeConfig().public.apiBase,
+        }
+      );
+      return response.contributions;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao carregar contribuições';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const getGoalWithContributions = async (goalId: string) => {
+    isLoading.value = true;
+    error.value = null;
+    try {
+      const response = await $fetch<GoalWithContributions>(
+        `/goals/${goalId}/details`,
+        {
+          headers: { Authorization: `Bearer ${useAuthStore().token}` },
+          baseURL: useRuntimeConfig().public.apiBase,
+        }
+      );
+      return response;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao carregar detalhes da meta';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
   const clearError = () => (error.value = null);
 
   return {
@@ -141,6 +195,8 @@ export const useGoalsStore = defineStore('goals', () => {
     deleteGoal,
     contributeToGoal,
     getGoalProgress,
+    getGoalContributions,
+    getGoalWithContributions,
     clearError,
   };
 });

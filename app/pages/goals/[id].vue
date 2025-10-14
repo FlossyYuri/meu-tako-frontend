@@ -69,6 +69,14 @@
           <ContributeForm :goal-id="id" @contributed="reload" />
         </div>
 
+        <!-- Histórico de Contribuições -->
+        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          <ContributionsHistory
+            :contributions="contributions || []"
+            :is-loading="isLoadingContributions"
+          />
+        </div>
+
         <!-- Edição -->
         <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <h3 class="font-medium text-gray-900 dark:text-white mb-4">
@@ -121,6 +129,8 @@ const { success, error: showError } = useNotifications()
 
 const goal = ref<import('~/types').Goal | null>(null)
 const progress = ref<import('~/types').GoalProgress | null>(null)
+const contributions = ref<import('~/types').GoalContribution[]>([])
+const isLoadingContributions = ref(false)
 
 const load = async () => {
   const data = await goalsStore.getGoalById(id)
@@ -132,9 +142,21 @@ const load = async () => {
   }
 }
 
+const loadContributions = async () => {
+  isLoadingContributions.value = true
+  try {
+    contributions.value = await goalsStore.getGoalContributions(id)
+  } catch (err: any) {
+    showError('Erro ao carregar contribuições', err?.message)
+  } finally {
+    isLoadingContributions.value = false
+  }
+}
+
 const reload = async () => {
   try {
     await load()
+    await loadContributions()
   } catch (err: any) {
     showError('Erro ao recarregar dados', err?.message)
   }
@@ -159,6 +181,7 @@ const onDelete = async () => {
 onMounted(async () => {
   try {
     await load()
+    await loadContributions()
   } catch (err: any) {
     showError('Erro ao carregar meta', err?.message)
   }

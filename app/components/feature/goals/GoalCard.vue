@@ -14,12 +14,20 @@
             {{ formatDisplayDate(goal.end_date) }}
           </p>
         </div>
-        <Badge
-          :variant="goal.status === 'active' ? 'success' : 'default'"
-          size="sm"
-        >
-          {{ goal.status === 'active' ? 'Ativa' : 'Inativa' }}
-        </Badge>
+        <div class="flex flex-col gap-1">
+          <Badge
+            :variant="goal.status === 'active' ? 'success' : 'default'"
+            size="sm"
+          >
+            {{ goal.status === 'active' ? 'Ativa' : 'Inativa' }}
+          </Badge>
+          <Badge v-if="goal.is_completed" variant="success" size="sm">
+            Concluída
+          </Badge>
+          <Badge v-else-if="goal.is_expired" variant="error" size="sm">
+            Expirada
+          </Badge>
+        </div>
       </div>
 
       <div class="space-y-3">
@@ -52,6 +60,32 @@
             <span class="font-semibold text-gray-900 dark:text-white">
               {{ formatCurrency(goal.target_amount) }}
             </span>
+          </div>
+        </div>
+
+        <!-- Restante -->
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-600 dark:text-gray-400">Restante</span>
+          <span class="font-medium text-gray-900 dark:text-white">
+            {{ formatCurrency(goal.target_amount - goal.current_amount) }}
+          </span>
+        </div>
+
+        <!-- Informações adicionais -->
+        <div
+          v-if="goal.days_remaining !== undefined || goal.monthly_target"
+          class="grid grid-cols-2 gap-2 text-xs text-gray-500 dark:text-gray-400"
+        >
+          <div
+            v-if="goal.days_remaining !== undefined"
+            class="flex items-center gap-1"
+          >
+            <Icon name="lucide:calendar" class="w-3 h-3" />
+            <span>{{ goal.days_remaining }} dias restantes</span>
+          </div>
+          <div v-if="goal.monthly_target" class="flex items-center gap-1">
+            <Icon name="lucide:target" class="w-3 h-3" />
+            <span>Meta mensal: {{ formatCurrency(goal.monthly_target) }}</span>
           </div>
         </div>
 

@@ -191,6 +191,12 @@ export interface Goal {
   created_at: string;
   updated_at: string;
   category?: Category;
+  // Campos adicionais da API
+  progress?: number;
+  is_completed?: boolean;
+  is_expired?: boolean;
+  days_remaining?: number;
+  monthly_target?: number;
 }
 
 export interface CreateGoalRequest {
@@ -213,6 +219,20 @@ export interface UpdateGoalRequest {
 
 export interface ContributeToGoalRequest {
   amount: number;
+  description?: string;
+}
+
+export interface GoalContribution {
+  contribution_id: string;
+  goal_id: string;
+  amount: number;
+  description?: string;
+  contributed_at: string;
+}
+
+export interface GoalWithContributions {
+  goal: Goal;
+  contributions: GoalContribution[];
 }
 
 export interface GoalProgress {
