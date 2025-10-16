@@ -258,12 +258,32 @@
               </select>
             </div>
 
-            <!-- Notifications -->
+            <!-- Push Notifications -->
             <div>
               <label
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3"
               >
-                Notificações
+                Notificações Push
+              </label>
+              <PushNotificationSettings />
+            </div>
+
+            <!-- Diagnóstico de Push Notifications -->
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3"
+              >
+                Diagnóstico de Push Notifications
+              </label>
+              <PushNotificationDiagnostic />
+            </div>
+
+            <!-- Email Notifications -->
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3"
+              >
+                Notificações por E-mail
               </label>
               <div class="space-y-4">
                 <div class="flex items-start justify-between gap-4">
@@ -340,8 +360,8 @@
                 <div class="flex-shrink-0">
                   <Button
                     variant="outline"
-                    @click="exportData"
                     class="w-full sm:w-auto"
+                    @click="exportData"
                   >
                     Exportar
                   </Button>
@@ -367,8 +387,8 @@
                 <div class="flex-shrink-0">
                   <Button
                     variant="error"
-                    @click="confirmDeleteAccount"
                     class="w-full sm:w-auto"
+                    @click="confirmDeleteAccount"
                   >
                     Excluir
                   </Button>

@@ -22,6 +22,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: process.env.API_BASE_URL || 'http://localhost:5000/api',
+      vapidPublicKey: process.env.NUXT_PUBLIC_VAPID_PUBLIC_KEY || '',
     },
   },
   app: {
@@ -82,6 +83,24 @@ export default defineNuxtConfig({
           rel: 'apple-touch-icon',
           sizes: '512x512',
           href: '/icons/512-512.png',
+        },
+      ],
+      script: [
+        {
+          innerHTML: `
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                  .then(function(registration) {
+                    console.log('ServiceWorker registration successful');
+                  })
+                  .catch(function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                  });
+              });
+            }
+          `,
+          type: 'text/javascript',
         },
       ],
     },
