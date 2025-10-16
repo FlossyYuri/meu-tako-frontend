@@ -268,6 +268,16 @@
               <PushNotificationSettings />
             </div>
 
+            <!-- Setup Automático de Push Notifications -->
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3"
+              >
+                Setup Automático de Push Notifications
+              </label>
+              <PushNotificationAutoSetup />
+            </div>
+
             <!-- Diagnóstico de Push Notifications -->
             <div>
               <label

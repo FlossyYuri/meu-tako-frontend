@@ -25,6 +25,11 @@ export const usePushNotifications = () => {
   const isLoading = ref(false);
   const error = ref<string | null>(null);
 
+  // Estados para setup automático
+  const isAutoSetupComplete = ref(false);
+  const isAutoSetupInProgress = ref(false);
+  const autoSetupError = ref<string | null>(null);
+
   // Verificar se o browser suporta push notifications
   const checkSupport = () => {
     isSupported.value = 'serviceWorker' in navigator && 'PushManager' in window;
@@ -72,7 +77,7 @@ export const usePushNotifications = () => {
     const bytes = new Uint8Array(buffer);
     let binary = '';
     for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
+      binary += String.fromCharCode(bytes[i]!);
     }
     return btoa(binary);
   };
@@ -317,6 +322,139 @@ export const usePushNotifications = () => {
     return 'ready';
   });
 
+  // Verificar se já foi configurado automaticamente
+  const hasBeenAutoSetup = computed(() => {
+    if (import.meta.client) {
+      return localStorage.getItem('push_notifications_auto_setup') === 'true';
+    }
+    return false;
+  });
+
+  // Setup automático de push notifications
+  const setupAutoPushNotifications = async (): Promise<boolean> => {
+    // Só executar no cliente
+    if (!import.meta.client) return false;
+
+    // Verificar se está em progresso
+    if (isAutoSetupInProgress.value) {
+      console.log('🔔 [PUSH AUTO] Setup automático já em progresso');
+      return false;
+    }
+
+    try {
+      isAutoSetupInProgress.value = true;
+      autoSetupError.value = null;
+
+      console.log(
+        '🔔 [PUSH AUTO] Iniciando setup automático de push notifications...'
+      );
+
+      // 1. Verificar suporte
+      if (!checkSupport()) {
+        console.log('🔔 [PUSH AUTO] Push notifications não suportadas');
+        return false;
+      }
+
+      // 2. SEMPRE verificar se já tem subscription ativa (independente da flag)
+      const hasExistingSubscription = await checkExistingSubscription();
+      if (hasExistingSubscription) {
+        console.log(
+          '🔔 [PUSH AUTO] Subscription já existe - não é necessário setup'
+        );
+        // Não marcar como completo nem salvar no localStorage
+        // pois a subscription pode ser removida depois
+        return true;
+      }
+
+      // 3. Verificar permissão atual
+      checkPermission();
+
+      // 4. Se não tem permissão, solicitar automaticamente
+      if (Notification.permission === 'default') {
+        console.log('🔔 [PUSH AUTO] Solicitando permissão...');
+        const permission = await Notification.requestPermission();
+
+        if (permission !== 'granted') {
+          console.log('🔔 [PUSH AUTO] Permissão negada pelo usuário');
+          return false;
+        }
+      } else if (Notification.permission === 'denied') {
+        console.log('🔔 [PUSH AUTO] Permissão negada anteriormente');
+        return false;
+      }
+
+      // 5. Registrar push notifications
+      console.log('🔔 [PUSH AUTO] Registrando push notifications...');
+      const success = await registerForPushNotifications();
+
+      if (success) {
+        console.log('🔔 [PUSH AUTO] Setup automático concluído com sucesso!');
+        isAutoSetupComplete.value = true;
+        // Marcar como configurado no localStorage apenas quando realmente registrado
+        localStorage.setItem('push_notifications_auto_setup', 'true');
+        return true;
+      } else {
+        console.log('🔔 [PUSH AUTO] Falha no setup automático');
+        return false;
+      }
+    } catch (error) {
+      console.error('🔔 [PUSH AUTO] Erro no setup automático:', error);
+      autoSetupError.value =
+        'Erro ao configurar push notifications automaticamente';
+      return false;
+    } finally {
+      isAutoSetupInProgress.value = false;
+    }
+  };
+
+  // Reset do setup automático (para permitir reconfiguração)
+  const resetAutoSetup = () => {
+    if (import.meta.client) {
+      localStorage.removeItem('push_notifications_auto_setup');
+      isAutoSetupComplete.value = false;
+      autoSetupError.value = null;
+    }
+  };
+
+  // Verificar se deve fazer setup automático
+  const shouldAutoSetup = computed(() => {
+    return (
+      import.meta.client &&
+      !isAutoSetupInProgress.value &&
+      !isAutoSetupComplete.value
+    );
+  });
+
+  // Verificar se deve executar setup baseado na subscription ativa
+  const shouldExecuteAutoSetup = async (): Promise<boolean> => {
+    if (!import.meta.client) return false;
+
+    // Se já está em progresso ou completo, não executar
+    if (isAutoSetupInProgress.value || isAutoSetupComplete.value) {
+      return false;
+    }
+
+    // SEMPRE verificar se há subscription ativa
+    try {
+      const hasExistingSubscription = await checkExistingSubscription();
+      if (hasExistingSubscription) {
+        console.log(
+          '🔔 [PUSH AUTO] Subscription ativa encontrada - não executar setup'
+        );
+        return false;
+      }
+
+      console.log(
+        '🔔 [PUSH AUTO] Nenhuma subscription ativa encontrada - executar setup'
+      );
+      return true;
+    } catch (error) {
+      console.error('🔔 [PUSH AUTO] Erro ao verificar subscription:', error);
+      // Em caso de erro, tentar executar setup
+      return true;
+    }
+  };
+
   return {
     // State
     isSupported: readonly(isSupported),
@@ -324,6 +462,13 @@ export const usePushNotifications = () => {
     isRegistered: readonly(isRegistered),
     isLoading: readonly(isLoading),
     error: readonly(error),
+
+    // Auto setup state
+    isAutoSetupComplete: readonly(isAutoSetupComplete),
+    isAutoSetupInProgress: readonly(isAutoSetupInProgress),
+    autoSetupError: readonly(autoSetupError),
+    hasBeenAutoSetup,
+    shouldAutoSetup,
 
     // Computed
     canRegister,
@@ -337,5 +482,10 @@ export const usePushNotifications = () => {
     registerForPushNotifications,
     checkExistingSubscription,
     unsubscribe,
+
+    // Auto setup methods
+    setupAutoPushNotifications,
+    resetAutoSetup,
+    shouldExecuteAutoSetup,
   };
 };
