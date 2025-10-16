@@ -42,15 +42,8 @@
             <Icon name="lucide:menu" class="w-5 h-5" />
           </button>
 
-          <NuxtLink to="/" class="flex items-center space-x-1.5">
-            <div
-              class="w-7 h-7 bg-primary-600 rounded-lg flex items-center justify-center"
-            >
-              <Icon name="lucide:wallet" class="w-4 h-4 text-white" />
-            </div>
-            <span class="text-base font-bold text-gray-900 dark:text-white">
-              Meu Tako
-            </span>
+          <NuxtLink to="/" class="flex items-center justify-center space-x-1.5">
+            <Logo size="lg" :show-text="true" />
           </NuxtLink>
 
           <div class="flex items-center space-x-1">
@@ -104,7 +97,12 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useAuthStore } from '../stores/auth'
+import { useRouter } from 'vue-router'
+
 const authStore = useAuthStore()
+const router = useRouter()
 
 const sidebarOpen = ref(false)
 const userMenuOpen = ref(false)
@@ -118,7 +116,7 @@ onMounted(() => {
 const logout = async () => {
   try {
     await authStore.logout()
-    await navigateTo('/auth/login')
+    await router.push('/auth/login')
   } catch (error) {
     console.error('Erro ao fazer logout:', error)
   }

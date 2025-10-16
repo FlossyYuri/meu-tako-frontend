@@ -4,15 +4,8 @@
     <div
       class="flex items-center justify-between px-3 py-3 border-b border-gray-200 dark:border-gray-700"
     >
-      <NuxtLink to="/" class="flex items-center space-x-2">
-        <div
-          class="w-7 h-7 bg-primary-600 rounded-lg flex items-center justify-center"
-        >
-          <Icon name="lucide:wallet" class="w-4 h-4 text-white" />
-        </div>
-        <span class="text-base font-bold text-gray-900 dark:text-white">
-          Meu Tako
-        </span>
+      <NuxtLink to="/" class="flex items-center justify-center space-x-2">
+        <Logo size="lg" :show-text="true" />
       </NuxtLink>
 
       <button
@@ -73,6 +66,9 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '../../stores/auth'
+import { useRoute, useRouter } from 'vue-router'
+
 interface NavItem {
   name: string
   href: string

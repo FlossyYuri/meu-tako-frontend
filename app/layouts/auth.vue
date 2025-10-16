@@ -5,15 +5,8 @@
     <div class="sm:mx-auto sm:w-full sm:max-w-md">
       <!-- Logo -->
       <div class="flex justify-center">
-        <NuxtLink to="/" class="flex items-center space-x-2">
-          <div
-            class="w-12 h-12 bg-primary-600 rounded-xl flex items-center justify-center"
-          >
-            <Icon name="lucide:wallet" class="w-7 h-7 text-white" />
-          </div>
-          <span class="text-2xl font-bold text-gray-900 dark:text-white">
-            Meu Tako
-          </span>
+        <NuxtLink to="/" class="flex items-center justify-center space-x-2">
+          <Logo size="xl" :show-text="true" />
         </NuxtLink>
       </div>
 

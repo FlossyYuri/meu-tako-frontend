@@ -36,6 +36,54 @@ export default defineNuxtConfig({
             'Gerencie suas finanças pessoais de forma simples e eficiente',
         },
       ],
+      link: [
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '48x48',
+          href: '/icons/48-48.png',
+        },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '72x72',
+          href: '/icons/72-72.png',
+        },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '96x96',
+          href: '/icons/96-96.png',
+        },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '144x144',
+          href: '/icons/144-144.png',
+        },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '192x192',
+          href: '/icons/192-192.png',
+        },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '512x512',
+          href: '/icons/512-512.png',
+        },
+        {
+          rel: 'apple-touch-icon',
+          sizes: '192x192',
+          href: '/icons/192-192.png',
+        },
+        {
+          rel: 'apple-touch-icon',
+          sizes: '512x512',
+          href: '/icons/512-512.png',
+        },
+      ],
     },
   },
 });
