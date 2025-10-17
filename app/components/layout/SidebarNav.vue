@@ -90,6 +90,7 @@ const router = useRouter()
 const navigationItems: NavItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: 'lucide:layout-dashboard' },
   { name: 'Transações', href: '/transactions', icon: 'lucide:credit-card' },
+  { name: 'Listas de Compras', href: '/shopping-lists', icon: 'lucide:shopping-cart' },
   { name: 'Receitas', href: '/incomes', icon: 'lucide:trending-up' },
   { name: 'Despesas', href: '/expenses', icon: 'lucide:trending-down' },
   { name: 'Carteiras', href: '/wallets', icon: 'lucide:wallet' },

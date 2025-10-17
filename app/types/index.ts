@@ -460,9 +460,70 @@ export interface DateRange {
   end: string;
 }
 
+// Shopping List types
+export interface ShoppingList {
+  shopping_list_id: string;
+  user_id: string;
+  name: string;
+  description?: string;
+  total_value: number;
+  status: 'draft' | 'active' | 'completed' | 'cancelled';
+  created_at: string;
+  updated_at: string;
+  completed_at?: string | null;
+  active: boolean;
+  items: ShoppingListItem[];
+}
+
+export interface ShoppingListItem {
+  item_id: string;
+  shopping_list_id: string;
+  expense_category_id?: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  price: number;
+  is_purchased: boolean;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  active: boolean;
+  category?: Category;
+}
+
+export interface CreateShoppingListRequest {
+  name: string;
+  description?: string;
+  status?: 'draft' | 'active' | 'completed' | 'cancelled';
+}
+
+export interface UpdateShoppingListRequest {
+  name?: string;
+  description?: string;
+  status?: 'draft' | 'active' | 'completed' | 'cancelled';
+}
+
+export interface CreateShoppingListItemRequest {
+  name: string;
+  quantity?: number;
+  unit?: string;
+  price?: number;
+  expense_category_id?: string;
+  notes?: string;
+}
+
+export interface UpdateShoppingListItemRequest {
+  name?: string;
+  quantity?: number;
+  unit?: string;
+  price?: number;
+  expense_category_id?: string;
+  notes?: string;
+}
+
 // Search types
 export interface SearchResult {
-  type: 'transaction' | 'category' | 'wallet' | 'goal';
+  type: 'transaction' | 'category' | 'wallet' | 'goal' | 'shopping-list';
   id: string;
   title: string;
   description?: string;

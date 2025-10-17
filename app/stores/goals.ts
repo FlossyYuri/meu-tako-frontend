@@ -43,14 +43,16 @@ export const useGoalsStore = defineStore('goals', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const created = await $fetch<Goal>('/goals', {
+      await $fetch<Goal>('/goals', {
         method: 'POST',
         body: payload,
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
-      goals.value.push(created);
-      return created;
+
+      // Fetch updated goals after creation
+      await fetchGoals();
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao criar meta';
       throw err;
@@ -63,15 +65,16 @@ export const useGoalsStore = defineStore('goals', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const updated = await $fetch<Goal>(`/goals/${goalId}`, {
+      await $fetch<Goal>(`/goals/${goalId}`, {
         method: 'PUT',
         body: payload,
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
-      const idx = goals.value.findIndex((g) => g.goal_id === goalId);
-      if (idx !== -1) goals.value[idx] = updated;
-      return updated;
+
+      // Fetch updated goals after update
+      await fetchGoals();
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao atualizar meta';
       throw err;
@@ -89,7 +92,9 @@ export const useGoalsStore = defineStore('goals', () => {
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
-      goals.value = goals.value.filter((g) => g.goal_id !== goalId);
+
+      // Fetch updated goals after deletion
+      await fetchGoals();
       return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao deletar meta';
@@ -106,7 +111,7 @@ export const useGoalsStore = defineStore('goals', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const response = await $fetch<{
+      await $fetch<{
         contribution_id: string;
         goal_id: string;
         amount: number;
@@ -119,14 +124,10 @@ export const useGoalsStore = defineStore('goals', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      // Atualizar a meta local com o novo valor
-      const idx = goals.value.findIndex((g) => g.goal_id === goalId);
-      if (idx !== -1 && goals.value[idx]) {
-        goals.value[idx].current_amount += payload.amount;
-        goals.value[idx].updated_at = response.contributed_at;
-      }
+      // Fetch updated goals after contribution
+      await fetchGoals();
 
-      return response;
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao contribuir para a meta';
       throw err;

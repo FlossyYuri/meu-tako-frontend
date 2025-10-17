@@ -87,7 +87,7 @@ export const useWalletsStore = defineStore('wallets', () => {
 
       const normalized = normalizeWallet(response);
 
-      const idx = wallets.value.findIndex(w => w.wallet_id === walletId);
+      const idx = wallets.value.findIndex((w) => w.wallet_id === walletId);
       if (idx !== -1) wallets.value[idx] = normalized;
       else wallets.value.push(normalized);
 
@@ -109,7 +109,7 @@ export const useWalletsStore = defineStore('wallets', () => {
       isLoading.value = true;
       error.value = null;
 
-      const response = await $fetch<any>('/wallets', {
+      await $fetch<any>('/wallets', {
         method: 'POST',
         body: walletData,
         headers: {
@@ -118,15 +118,10 @@ export const useWalletsStore = defineStore('wallets', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      const normalized = normalizeWallet(response);
-      wallets.value.push(normalized);
+      // Fetch updated wallets after creation
+      await fetchWallets();
 
-      // If this is the first wallet, set it as current
-      if (wallets.value.length === 1) {
-        currentWallet.value = normalized;
-      }
-
-      return normalized;
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao criar carteira';
       throw err;
@@ -143,7 +138,7 @@ export const useWalletsStore = defineStore('wallets', () => {
       isLoading.value = true;
       error.value = null;
 
-      const response = await $fetch<any>(`/wallets/${walletId}`, {
+      await $fetch<any>(`/wallets/${walletId}`, {
         method: 'PUT',
         body: walletData,
         headers: {
@@ -152,19 +147,10 @@ export const useWalletsStore = defineStore('wallets', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      const normalized = normalizeWallet(response);
+      // Fetch updated wallet after update
+      await fetchWalletById(walletId);
 
-      const index = wallets.value.findIndex((w) => w.wallet_id === walletId);
-      if (index !== -1) {
-        wallets.value[index] = normalized;
-      }
-
-      // Update current wallet if it's the one being updated
-      if (currentWallet.value?.wallet_id === walletId) {
-        currentWallet.value = normalized;
-      }
-
-      return normalized;
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao atualizar carteira';
       throw err;
@@ -186,8 +172,8 @@ export const useWalletsStore = defineStore('wallets', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      // Remove from local state
-      wallets.value = wallets.value.filter((w) => w.wallet_id !== walletId);
+      // Fetch updated wallets after deletion
+      await fetchWallets();
 
       // If deleted wallet was current, set new current
       if (currentWallet.value?.wallet_id === walletId) {
@@ -208,7 +194,7 @@ export const useWalletsStore = defineStore('wallets', () => {
       isLoading.value = true;
       error.value = null;
 
-      const response = await $fetch<any>(`/wallets/${walletId}/default`, {
+      await $fetch<any>(`/wallets/${walletId}/default`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${useAuthStore().token}`,
@@ -216,25 +202,10 @@ export const useWalletsStore = defineStore('wallets', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      const normalized = normalizeWallet(response);
+      // Fetch updated wallets after setting default
+      await fetchWallets();
 
-      // Update all wallets to remove default flag
-      wallets.value = wallets.value.map((w) => ({ ...w, is_default: false }));
-
-      // Set the new default wallet
-      const index = wallets.value.findIndex((w) => w.wallet_id === walletId);
-      if (index !== -1) {
-        wallets.value[index] = normalized;
-      } else {
-        wallets.value.push(normalized);
-      }
-
-      // Update current wallet if matches
-      if (currentWallet.value?.wallet_id === walletId) {
-        currentWallet.value = normalized;
-      }
-
-      return normalized;
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao definir carteira padrão';
       throw err;

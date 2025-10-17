@@ -81,7 +81,12 @@ const buttonClasses = computed(() => {
 
 const handleClick = async (event: MouseEvent) => {
   if (props.disabled || props.loading) return
-  emit('click', event)
+
+  // Para botões submit, não emitir evento click para evitar duplicação
+  // O formulário pai deve gerenciar o submit via @submit.prevent
+  if (props.type !== 'submit') {
+    emit('click', event)
+  }
 
   // Navegação interna (rota)
   if (props.to) {

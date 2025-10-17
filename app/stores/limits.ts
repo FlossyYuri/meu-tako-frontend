@@ -1,5 +1,10 @@
 import { defineStore } from 'pinia';
-import type { Limit, CreateLimitRequest, UpdateLimitRequest, LimitStatus } from '~/types';
+import type {
+  Limit,
+  CreateLimitRequest,
+  UpdateLimitRequest,
+  LimitStatus,
+} from '~/types';
 
 export const useLimitsStore = defineStore('limits', () => {
   const limits = ref<Limit[]>([]);
@@ -32,7 +37,7 @@ export const useLimitsStore = defineStore('limits', () => {
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
-      const idx = limits.value.findIndex(l => l.limit_id === limitId);
+      const idx = limits.value.findIndex((l) => l.limit_id === limitId);
       if (idx !== -1) limits.value[idx] = data;
       else limits.value.push(data);
       return data;
@@ -55,14 +60,16 @@ export const useLimitsStore = defineStore('limits', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const created = await $fetch<Limit>('/limits', {
+      await $fetch<Limit>('/limits', {
         method: 'POST',
         body: payload,
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
-      limits.value.push(created);
-      return created;
+
+      // Fetch updated limits after creation
+      await fetchLimits();
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao criar limite';
       throw err;
@@ -75,15 +82,16 @@ export const useLimitsStore = defineStore('limits', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const updated = await $fetch<Limit>(`/limits/${limitId}`, {
+      await $fetch<Limit>(`/limits/${limitId}`, {
         method: 'PUT',
         body: payload,
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
-      const idx = limits.value.findIndex(l => l.limit_id === limitId);
-      if (idx !== -1) limits.value[idx] = updated;
-      return updated;
+
+      // Fetch updated limits after update
+      await fetchLimits();
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao atualizar limite';
       throw err;
@@ -101,7 +109,9 @@ export const useLimitsStore = defineStore('limits', () => {
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
-      limits.value = limits.value.filter(l => l.limit_id !== limitId);
+
+      // Fetch updated limits after deletion
+      await fetchLimits();
       return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao deletar limite';

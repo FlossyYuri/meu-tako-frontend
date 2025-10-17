@@ -1,21 +1,22 @@
 import { defineStore } from 'pinia';
-import type { Category, CreateCategoryRequest, UpdateCategoryRequest } from '~/types';
+import type {
+  Category,
+  CreateCategoryRequest,
+  UpdateCategoryRequest,
+} from '~/types';
 
 type AnyCategory = Partial<Category> & Record<string, any>;
 
 const normalizeCategory = (raw: AnyCategory): Category => {
   const id =
-    raw.category_id ||
-    raw.expense_category_id ||
-    raw.income_category_id ||
-    '';
+    raw.category_id || raw.expense_category_id || raw.income_category_id || '';
 
   const isActive =
     typeof raw.is_active === 'boolean'
       ? raw.is_active
       : typeof raw.active === 'boolean'
-        ? raw.active
-        : true;
+      ? raw.active
+      : true;
 
   return {
     category_id: String(id),
@@ -49,7 +50,8 @@ export const useCategoriesStore = defineStore('categories', () => {
       incomeCategories.value = (data || []).map(normalizeCategory);
       return incomeCategories.value;
     } catch (err: any) {
-      error.value = err.data?.message || 'Erro ao carregar categorias de receitas';
+      error.value =
+        err.data?.message || 'Erro ao carregar categorias de receitas';
       throw err;
     } finally {
       isLoading.value = false;
@@ -57,7 +59,7 @@ export const useCategoriesStore = defineStore('categories', () => {
   };
 
   const getIncomeCategoryById = (id: string) =>
-    incomeCategories.value.find(c => c.category_id === id);
+    incomeCategories.value.find((c) => c.category_id === id);
 
   const getIncomeCategoryRemote = async (id: string) => {
     isLoading.value = true;
@@ -68,7 +70,9 @@ export const useCategoriesStore = defineStore('categories', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
       const normalized = normalizeCategory(data);
-      const idx = incomeCategories.value.findIndex(c => c.category_id === normalized.category_id);
+      const idx = incomeCategories.value.findIndex(
+        (c) => c.category_id === normalized.category_id
+      );
       if (idx !== -1) incomeCategories.value[idx] = normalized;
       else incomeCategories.value.push(normalized);
       return normalized;
@@ -84,15 +88,16 @@ export const useCategoriesStore = defineStore('categories', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const created = await $fetch<any>('/income-categories', {
+      await $fetch<any>('/income-categories', {
         method: 'POST',
         body: payload,
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
-      const normalized = normalizeCategory(created);
-      incomeCategories.value.push(normalized);
-      return normalized;
+
+      // Fetch updated income categories after creation
+      await fetchIncomeCategories();
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao criar categoria de receita';
       throw err;
@@ -101,22 +106,26 @@ export const useCategoriesStore = defineStore('categories', () => {
     }
   };
 
-  const updateIncomeCategory = async (categoryId: string, payload: UpdateCategoryRequest) => {
+  const updateIncomeCategory = async (
+    categoryId: string,
+    payload: UpdateCategoryRequest
+  ) => {
     isLoading.value = true;
     error.value = null;
     try {
-      const updated = await $fetch<any>(`/income-categories/${categoryId}`, {
+      await $fetch<any>(`/income-categories/${categoryId}`, {
         method: 'PUT',
         body: payload,
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
-      const normalized = normalizeCategory(updated);
-      const idx = incomeCategories.value.findIndex(c => c.category_id === normalized.category_id);
-      if (idx !== -1) incomeCategories.value[idx] = normalized;
-      return normalized;
+
+      // Fetch updated income categories after update
+      await fetchIncomeCategories();
+      return true;
     } catch (err: any) {
-      error.value = err.data?.message || 'Erro ao atualizar categoria de receita';
+      error.value =
+        err.data?.message || 'Erro ao atualizar categoria de receita';
       throw err;
     } finally {
       isLoading.value = false;
@@ -132,7 +141,9 @@ export const useCategoriesStore = defineStore('categories', () => {
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
-      incomeCategories.value = incomeCategories.value.filter(c => c.category_id !== categoryId);
+
+      // Fetch updated income categories after deletion
+      await fetchIncomeCategories();
       return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao deletar categoria de receita';
@@ -156,7 +167,8 @@ export const useCategoriesStore = defineStore('categories', () => {
       expenseCategories.value = list;
       return list;
     } catch (err: any) {
-      error.value = err.data?.message || 'Erro ao carregar categorias de despesas';
+      error.value =
+        err.data?.message || 'Erro ao carregar categorias de despesas';
       throw err;
     } finally {
       isLoading.value = false;
@@ -164,7 +176,7 @@ export const useCategoriesStore = defineStore('categories', () => {
   };
 
   const getExpenseCategoryById = (id: string) =>
-    expenseCategories.value.find(c => c.category_id === id);
+    expenseCategories.value.find((c) => c.category_id === id);
 
   const getExpenseCategoryRemote = async (id: string) => {
     isLoading.value = true;
@@ -175,7 +187,9 @@ export const useCategoriesStore = defineStore('categories', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
       const normalized = normalizeCategory(data);
-      const idx = expenseCategories.value.findIndex(c => c.category_id === normalized.category_id);
+      const idx = expenseCategories.value.findIndex(
+        (c) => c.category_id === normalized.category_id
+      );
       if (idx !== -1) expenseCategories.value[idx] = normalized;
       else expenseCategories.value.push(normalized);
       return normalized;
@@ -191,15 +205,16 @@ export const useCategoriesStore = defineStore('categories', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const created = await $fetch<any>('/expense-categories', {
+      await $fetch<any>('/expense-categories', {
         method: 'POST',
         body: payload,
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
-      const normalized = normalizeCategory(created);
-      expenseCategories.value.push(normalized);
-      return normalized;
+
+      // Fetch updated expense categories after creation
+      await fetchExpenseCategories();
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao criar categoria';
       throw err;
@@ -208,20 +223,23 @@ export const useCategoriesStore = defineStore('categories', () => {
     }
   };
 
-  const updateExpenseCategory = async (categoryId: string, payload: UpdateCategoryRequest) => {
+  const updateExpenseCategory = async (
+    categoryId: string,
+    payload: UpdateCategoryRequest
+  ) => {
     isLoading.value = true;
     error.value = null;
     try {
-      const updated = await $fetch<any>(`/expense-categories/${categoryId}`, {
+      await $fetch<any>(`/expense-categories/${categoryId}`, {
         method: 'PUT',
         body: payload,
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
-      const normalized = normalizeCategory(updated);
-      const idx = expenseCategories.value.findIndex(c => c.category_id === normalized.category_id);
-      if (idx !== -1) expenseCategories.value[idx] = normalized;
-      return normalized;
+
+      // Fetch updated expense categories after update
+      await fetchExpenseCategories();
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao atualizar categoria';
       throw err;
@@ -239,7 +257,9 @@ export const useCategoriesStore = defineStore('categories', () => {
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
-      expenseCategories.value = expenseCategories.value.filter(c => c.category_id !== categoryId);
+
+      // Fetch updated expense categories after deletion
+      await fetchExpenseCategories();
       return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao deletar categoria';
@@ -253,15 +273,15 @@ export const useCategoriesStore = defineStore('categories', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const updated = await $fetch<any>(`/expense-categories/${categoryId}/toggle-active`, {
+      await $fetch<any>(`/expense-categories/${categoryId}/toggle-active`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
-      const normalized = normalizeCategory(updated);
-      const idx = expenseCategories.value.findIndex(c => c.category_id === normalized.category_id);
-      if (idx !== -1) expenseCategories.value[idx] = normalized;
-      return normalized;
+
+      // Fetch updated expense categories after toggle
+      await fetchExpenseCategories();
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao alternar status da categoria';
       throw err;
