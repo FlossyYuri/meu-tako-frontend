@@ -17,9 +17,6 @@
         required
         @blur="validateName"
       />
-      <p v-if="errors.name" class="mt-1 text-sm text-red-600 dark:text-red-400">
-        {{ errors.name }}
-      </p>
     </div>
 
     <!-- Description -->

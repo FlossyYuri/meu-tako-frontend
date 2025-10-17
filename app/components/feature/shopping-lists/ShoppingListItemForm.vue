@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="handleSubmit" class="space-y-4">
+  <form class="space-y-4" @submit.prevent="handleSubmit">
     <!-- Name -->
     <div>
       <label
@@ -17,9 +17,6 @@
         required
         @blur="validateName"
       />
-      <p v-if="errors.name" class="mt-1 text-sm text-red-600 dark:text-red-400">
-        {{ errors.name }}
-      </p>
     </div>
 
     <!-- Quantity and Unit -->
@@ -42,12 +39,6 @@
           required
           @blur="validateQuantity"
         />
-        <p
-          v-if="errors.quantity"
-          class="mt-1 text-sm text-red-600 dark:text-red-400"
-        >
-          {{ errors.quantity }}
-        </p>
       </div>
 
       <div>
@@ -84,12 +75,6 @@
         :error="errors.price"
         @blur="validatePrice"
       />
-      <p
-        v-if="errors.price"
-        class="mt-1 text-sm text-red-600 dark:text-red-400"
-      >
-        {{ errors.price }}
-      </p>
     </div>
 
     <!-- Category -->
@@ -148,8 +133,8 @@
       <Button
         type="button"
         variant="outline"
-        @click="handleCancel"
         :disabled="loading"
+        @click="handleCancel"
       >
         Cancelar
       </Button>
