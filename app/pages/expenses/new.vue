@@ -55,6 +55,10 @@
         </div>
 
         <div>
+          <WalletSelector v-model="form.wallet_id" :error="errors.wallet_id" />
+        </div>
+
+        <div>
           <label class="label">Categoria</label>
           <div class="flex gap-2">
             <select
@@ -152,20 +156,22 @@ const form = reactive({
   description: '',
   date: new Date().toISOString().split('T')[0],
   expense_category_id: '',
-  paid: false
+  paid: false,
+  wallet_id: ''
 })
 
 const errors = reactive({
   amount: '',
   description: '',
   date: '',
-  expense_category_id: ''
+  expense_category_id: '',
+  wallet_id: ''
 })
 
 const showCategoryModal = ref(false)
 
 const isFormValid = computed(() => {
-  return form.amount && form.date && form.expense_category_id && !errors.amount && !errors.date && !errors.expense_category_id
+  return form.amount && form.date && form.expense_category_id && form.wallet_id && !errors.amount && !errors.date && !errors.expense_category_id && !errors.wallet_id
 })
 
 const validateForm = () => {
@@ -174,6 +180,7 @@ const validateForm = () => {
   if (!form.amount || parseFloat(form.amount) <= 0) { errors.amount = 'Valor deve ser maior que zero'; ok = false }
   if (!form.date) { errors.date = 'Data é obrigatória'; ok = false }
   if (!form.expense_category_id) { errors.expense_category_id = 'Categoria é obrigatória'; ok = false }
+  if (!form.wallet_id) { errors.wallet_id = 'Carteira é obrigatória'; ok = false }
   return ok
 }
 
@@ -186,7 +193,8 @@ const handleSubmit = async () => {
       amount: parseFloat(form.amount),
       description: form.description?.trim() || undefined,
       date: form.date,
-      paid: form.paid
+      paid: form.paid,
+      wallet_id: form.wallet_id
     })
     success('Despesa adicionada com sucesso!')
     await navigateTo('/expenses')
@@ -209,4 +217,5 @@ const onCategoryCreated = async (created: import('~/types').Category) => {
 watch(() => form.amount, () => { if (errors.amount) errors.amount = '' })
 watch(() => form.date, () => { if (errors.date) errors.date = '' })
 watch(() => form.expense_category_id, () => { if (errors.expense_category_id) errors.expense_category_id = '' })
+watch(() => form.wallet_id, () => { if (errors.wallet_id) errors.wallet_id = '' })
 </script>

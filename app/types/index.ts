@@ -159,6 +159,7 @@ export interface CreateIncomeRequest {
   date: string;
   description?: string;
   received?: boolean;
+  wallet_id?: string;
 }
 
 export interface CreateExpenseRequest {
@@ -167,6 +168,7 @@ export interface CreateExpenseRequest {
   date: string;
   description?: string;
   paid?: boolean;
+  wallet_id?: string;
 }
 
 export interface TransferRequest {
