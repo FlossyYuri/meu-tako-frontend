@@ -9,6 +9,24 @@ import type {
   TransactionFilter,
 } from '~/types';
 
+type AnyListResponse<T> =
+  | T[]
+  | {
+      data?: T[];
+      items?: T[];
+      transactions?: T[];
+      pagination?: {
+        page?: number;
+        limit?: number;
+        total?: number;
+        totalPages?: number;
+      };
+      page?: number;
+      limit?: number;
+      total?: number;
+      totalPages?: number;
+    };
+
 export const useTransactionsStore = defineStore('transactions', () => {
   // State
   const transactions = ref<Transaction[]>([]);
@@ -18,23 +36,44 @@ export const useTransactionsStore = defineStore('transactions', () => {
   const error = ref<string | null>(null);
   const filters = ref<TransactionFilter>({});
 
+  // (Opcional) metadados de paginação vindos da API
+  const page = ref(1);
+  const limit = ref(10);
+  const total = ref(0);
+  const totalPages = ref(1);
+
+  // Helpers
+  const extractList = <T>(
+    res: AnyListResponse<T>
+  ): {
+    list: T[];
+    meta?: {
+      page?: number;
+      limit?: number;
+      total?: number;
+      totalPages?: number;
+    };
+  } => {
+    if (Array.isArray(res)) return { list: res };
+    const list = res.data || res.items || res.transactions || [];
+    const meta = {
+      page: res.pagination?.page ?? res.page,
+      limit: res.pagination?.limit ?? res.limit,
+      total: res.pagination?.total ?? res.total,
+      totalPages: res.pagination?.totalPages ?? res.totalPages,
+    };
+    return { list, meta };
+  };
+
   // Getters
   const recentTransactions = computed(() => {
-    if (!transactions.value || transactions.value.length === 0) {
-      return [];
-    }
-
+    if (!transactions.value || transactions.value.length === 0) return [];
     return transactions.value
-      .filter((transaction) => transaction.date) // Filter out transactions without dates
+      .filter((transaction) => transaction.date)
       .sort((a, b) => {
         const dateA = new Date(a.date);
         const dateB = new Date(b.date);
-
-        // Handle invalid dates
-        if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-          return 0;
-        }
-
+        if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
         return dateB.getTime() - dateA.getTime();
       })
       .slice(0, 10);
@@ -88,12 +127,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
     return filtered.sort((a, b) => {
       const dateA = new Date(a.date);
       const dateB = new Date(b.date);
-
-      // Handle invalid dates
-      if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-        return 0;
-      }
-
+      if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
       return dateB.getTime() - dateA.getTime();
     });
   });
@@ -139,22 +173,41 @@ export const useTransactionsStore = defineStore('transactions', () => {
   });
 
   // Actions
-  const fetchTransactions = async (walletId?: string) => {
+  const fetchTransactions = async (
+    walletId?: string,
+    pageArg?: number,
+    limitArg?: number
+  ) => {
     try {
       isLoading.value = true;
       error.value = null;
 
-      const params = walletId ? { wallet_id: walletId } : {};
-      const response = await $fetch<Transaction[]>('/transactions', {
-        params,
-        headers: {
-          Authorization: `Bearer ${useAuthStore().token}`,
-        },
-        baseURL: useRuntimeConfig().public.apiBase,
-      });
+      const response = await $fetch<AnyListResponse<Transaction>>(
+        '/transactions',
+        {
+          query: {
+            ...(walletId ? { wallet_id: walletId } : {}),
+            ...(pageArg ? { page: pageArg } : {}),
+            ...(limitArg ? { limit: limitArg } : {}),
+          },
+          headers: {
+            Authorization: `Bearer ${useAuthStore().token}`,
+          },
+          baseURL: useRuntimeConfig().public.apiBase,
+        }
+      );
 
-      transactions.value = response;
-      return response;
+      const { list, meta } = extractList<Transaction>(response);
+      transactions.value = list;
+
+      if (meta) {
+        page.value = meta.page ?? page.value;
+        limit.value = meta.limit ?? limit.value;
+        total.value = meta.total ?? total.value;
+        totalPages.value = meta.totalPages ?? totalPages.value;
+      }
+
+      return list;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao carregar transações';
       throw err;
@@ -163,14 +216,52 @@ export const useTransactionsStore = defineStore('transactions', () => {
     }
   };
 
-  const fetchIncomes = async (walletId?: string) => {
+  const fetchTransactionById = async (transactionId: string) => {
     try {
       isLoading.value = true;
       error.value = null;
 
-      const params = walletId ? { wallet_id: walletId } : {};
+      const response = await $fetch<Transaction>(
+        `/transactions/${transactionId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${useAuthStore().token}`,
+          },
+          baseURL: useRuntimeConfig().public.apiBase,
+        }
+      );
+
+      // Atualiza ou insere na lista local
+      const idx = transactions.value.findIndex(
+        (t) => t.transaction_id === transactionId
+      );
+      if (idx !== -1) transactions.value[idx] = response;
+      else transactions.value.push(response);
+
+      return response;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao carregar transação';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const fetchIncomes = async (
+    walletId?: string,
+    pageArg?: number,
+    limitArg?: number
+  ) => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+
       const response = await $fetch<Income[]>('/incomes', {
-        params,
+        query: {
+          ...(walletId ? { wallet_id: walletId } : {}),
+          ...(pageArg ? { page: pageArg } : {}),
+          ...(limitArg ? { limit: limitArg } : {}),
+        },
         headers: {
           Authorization: `Bearer ${useAuthStore().token}`,
         },
@@ -187,14 +278,46 @@ export const useTransactionsStore = defineStore('transactions', () => {
     }
   };
 
-  const fetchExpenses = async (walletId?: string) => {
+  const fetchIncomeById = async (incomeId: string) => {
     try {
       isLoading.value = true;
       error.value = null;
 
-      const params = walletId ? { wallet_id: walletId } : {};
+      const response = await $fetch<Income>(`/incomes/${incomeId}`, {
+        headers: {
+          Authorization: `Bearer ${useAuthStore().token}`,
+        },
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+
+      const idx = incomes.value.findIndex((i) => i.income_id === incomeId);
+      if (idx !== -1) incomes.value[idx] = response;
+      else incomes.value.push(response);
+
+      return response;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao carregar receita';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const fetchExpenses = async (
+    walletId?: string,
+    pageArg?: number,
+    limitArg?: number
+  ) => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+
       const response = await $fetch<Expense[]>('/expenses', {
-        params,
+        query: {
+          ...(walletId ? { wallet_id: walletId } : {}),
+          ...(pageArg ? { page: pageArg } : {}),
+          ...(limitArg ? { limit: limitArg } : {}),
+        },
         headers: {
           Authorization: `Bearer ${useAuthStore().token}`,
         },
@@ -211,33 +334,49 @@ export const useTransactionsStore = defineStore('transactions', () => {
     }
   };
 
-  const createIncome = async (incomeData: CreateIncomeRequest) => {
+  const fetchExpenseById = async (expenseId: string) => {
     try {
       isLoading.value = true;
       error.value = null;
 
-      const response = await $fetch<Income>('/incomes', {
-        method: 'POST',
-        body: incomeData,
+      const response = await $fetch<Expense>(`/expenses/${expenseId}`, {
         headers: {
           Authorization: `Bearer ${useAuthStore().token}`,
         },
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      incomes.value.push(response);
-
-      // Update wallet balance
-      const walletsStore = useWalletsStore();
-      const wallet = walletsStore.getWalletById(response.wallet_id);
-      if (wallet) {
-        walletsStore.updateWalletBalance(
-          response.wallet_id,
-          wallet.balance + response.amount
-        );
-      }
+      const idx = expenses.value.findIndex((e) => e.expense_id === expenseId);
+      if (idx !== -1) expenses.value[idx] = response;
+      else expenses.value.push(response);
 
       return response;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao carregar despesa';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const createIncome = async (incomeData: CreateIncomeRequest) => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+
+      await $fetch<Income>('/incomes', {
+        method: 'POST',
+        body: incomeData, // sem wallet_id
+        headers: {
+          Authorization: `Bearer ${useAuthStore().token}`,
+        },
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+
+      // Fetch updated incomes after creation
+      await fetchIncomes();
+
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao criar receita';
       throw err;
@@ -251,28 +390,19 @@ export const useTransactionsStore = defineStore('transactions', () => {
       isLoading.value = true;
       error.value = null;
 
-      const response = await $fetch<Expense>('/expenses', {
+      await $fetch<Expense>('/expenses', {
         method: 'POST',
-        body: expenseData,
+        body: expenseData, // sem wallet_id
         headers: {
           Authorization: `Bearer ${useAuthStore().token}`,
         },
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      expenses.value.push(response);
+      // Fetch updated expenses after creation
+      await fetchExpenses();
 
-      // Update wallet balance
-      const walletsStore = useWalletsStore();
-      const wallet = walletsStore.getWalletById(response.wallet_id);
-      if (wallet) {
-        walletsStore.updateWalletBalance(
-          response.wallet_id,
-          wallet.balance - response.amount
-        );
-      }
-
-      return response;
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao criar despesa';
       throw err;
@@ -289,7 +419,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
       isLoading.value = true;
       error.value = null;
 
-      const response = await $fetch<Income>(`/incomes/${incomeId}`, {
+      await $fetch<Income>(`/incomes/${incomeId}`, {
         method: 'PUT',
         body: incomeData,
         headers: {
@@ -298,12 +428,10 @@ export const useTransactionsStore = defineStore('transactions', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      const index = incomes.value.findIndex((i) => i.income_id === incomeId);
-      if (index !== -1) {
-        incomes.value[index] = response;
-      }
+      // Fetch updated incomes after update
+      await fetchIncomes();
 
-      return response;
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao atualizar receita';
       throw err;
@@ -320,7 +448,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
       isLoading.value = true;
       error.value = null;
 
-      const response = await $fetch<Expense>(`/expenses/${expenseId}`, {
+      await $fetch<Expense>(`/expenses/${expenseId}`, {
         method: 'PUT',
         body: expenseData,
         headers: {
@@ -329,12 +457,10 @@ export const useTransactionsStore = defineStore('transactions', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      const index = expenses.value.findIndex((e) => e.expense_id === expenseId);
-      if (index !== -1) {
-        expenses.value[index] = response;
-      }
+      // Fetch updated expenses after update
+      await fetchExpenses();
 
-      return response;
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao atualizar despesa';
       throw err;
@@ -348,8 +474,6 @@ export const useTransactionsStore = defineStore('transactions', () => {
       isLoading.value = true;
       error.value = null;
 
-      const income = incomes.value.find((i) => i.income_id === incomeId);
-
       await $fetch(`/incomes/${incomeId}`, {
         method: 'DELETE',
         headers: {
@@ -358,19 +482,8 @@ export const useTransactionsStore = defineStore('transactions', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      incomes.value = incomes.value.filter((i) => i.income_id !== incomeId);
-
-      // Update wallet balance
-      if (income) {
-        const walletsStore = useWalletsStore();
-        const wallet = walletsStore.getWalletById(income.wallet_id);
-        if (wallet) {
-          walletsStore.updateWalletBalance(
-            income.wallet_id,
-            wallet.balance - income.amount
-          );
-        }
-      }
+      // Fetch updated incomes after deletion
+      await fetchIncomes();
 
       return true;
     } catch (err: any) {
@@ -386,8 +499,6 @@ export const useTransactionsStore = defineStore('transactions', () => {
       isLoading.value = true;
       error.value = null;
 
-      const expense = expenses.value.find((e) => e.expense_id === expenseId);
-
       await $fetch(`/expenses/${expenseId}`, {
         method: 'DELETE',
         headers: {
@@ -396,19 +507,8 @@ export const useTransactionsStore = defineStore('transactions', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      expenses.value = expenses.value.filter((e) => e.expense_id !== expenseId);
-
-      // Update wallet balance
-      if (expense) {
-        const walletsStore = useWalletsStore();
-        const wallet = walletsStore.getWalletById(expense.wallet_id);
-        if (wallet) {
-          walletsStore.updateWalletBalance(
-            expense.wallet_id,
-            wallet.balance + expense.amount
-          );
-        }
-      }
+      // Fetch updated expenses after deletion
+      await fetchExpenses();
 
       return true;
     } catch (err: any) {
@@ -424,7 +524,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
       isLoading.value = true;
       error.value = null;
 
-      const response = await $fetch<Income>(`/incomes/${incomeId}/receive`, {
+      await $fetch<Income>(`/incomes/${incomeId}/receive`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${useAuthStore().token}`,
@@ -432,12 +532,10 @@ export const useTransactionsStore = defineStore('transactions', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      const index = incomes.value.findIndex((i) => i.income_id === incomeId);
-      if (index !== -1) {
-        incomes.value[index] = response;
-      }
+      // Fetch updated incomes after marking as received
+      await fetchIncomes();
 
-      return response;
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao marcar receita como recebida';
       throw err;
@@ -451,7 +549,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
       isLoading.value = true;
       error.value = null;
 
-      const response = await $fetch<Expense>(`/expenses/${expenseId}/pay`, {
+      await $fetch<Expense>(`/expenses/${expenseId}/pay`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${useAuthStore().token}`,
@@ -459,12 +557,10 @@ export const useTransactionsStore = defineStore('transactions', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      const index = expenses.value.findIndex((e) => e.expense_id === expenseId);
-      if (index !== -1) {
-        expenses.value[index] = response;
-      }
+      // Fetch updated expenses after marking as paid
+      await fetchExpenses();
 
-      return response;
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao marcar despesa como paga';
       throw err;
@@ -478,7 +574,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
       isLoading.value = true;
       error.value = null;
 
-      const response = await $fetch<Transaction>('/transactions/transfer', {
+      await $fetch<Transaction>('/transactions/transfer', {
         method: 'POST',
         body: transferData,
         headers: {
@@ -487,30 +583,10 @@ export const useTransactionsStore = defineStore('transactions', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      transactions.value.push(response);
+      // Fetch updated transactions after transfer
+      await fetchTransactions();
 
-      // Update wallet balances
-      const walletsStore = useWalletsStore();
-      const fromWallet = walletsStore.getWalletById(
-        transferData.from_wallet_id
-      );
-      const toWallet = walletsStore.getWalletById(transferData.to_wallet_id);
-
-      if (fromWallet) {
-        walletsStore.updateWalletBalance(
-          transferData.from_wallet_id,
-          fromWallet.balance - transferData.amount
-        );
-      }
-
-      if (toWallet) {
-        walletsStore.updateWalletBalance(
-          transferData.to_wallet_id,
-          toWallet.balance + transferData.amount
-        );
-      }
-
-      return response;
+      return true;
     } catch (err: any) {
       error.value = err.data?.message || 'Erro ao transferir entre carteiras';
       throw err;
@@ -539,6 +615,10 @@ export const useTransactionsStore = defineStore('transactions', () => {
     isLoading,
     error,
     filters,
+    page,
+    limit,
+    total,
+    totalPages,
 
     // Getters
     recentTransactions,
@@ -551,8 +631,11 @@ export const useTransactionsStore = defineStore('transactions', () => {
 
     // Actions
     fetchTransactions,
+    fetchTransactionById,
     fetchIncomes,
+    fetchIncomeById,
     fetchExpenses,
+    fetchExpenseById,
     createIncome,
     createExpense,
     updateIncome,

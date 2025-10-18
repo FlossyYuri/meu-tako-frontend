@@ -1,81 +1,60 @@
+import { toast } from 'vue-sonner';
 import type { Notification } from '~/types';
 
 export const useNotifications = () => {
-  const notifications = ref<Notification[]>([]);
-
-  const addNotification = (notification: Omit<Notification, 'id'>) => {
-    const id = Math.random().toString(36).substr(2, 9);
-    const newNotification: Notification = {
-      id,
-      duration: 5000,
-      ...notification,
-    };
-
-    notifications.value.push(newNotification);
-
-    // Auto remove notification after duration
-    if (newNotification.duration && newNotification.duration > 0) {
-      setTimeout(() => {
-        removeNotification(id);
-      }, newNotification.duration);
-    }
-
-    return id;
-  };
-
-  const removeNotification = (id: string) => {
-    const index = notifications.value.findIndex((n) => n.id === id);
-    if (index !== -1) {
-      notifications.value.splice(index, 1);
-    }
-  };
-
-  const clearAllNotifications = () => {
-    notifications.value = [];
-  };
-
+  // Mantemos a assinatura, mas delegamos os toasts ao vue-sonner
   const success = (title: string, message?: string) => {
-    return addNotification({
-      type: 'success',
-      title,
-      message: message || '',
-    });
+    return toast.success(title, { description: message });
   };
 
   const error = (title: string, message?: string) => {
-    return addNotification({
-      type: 'error',
-      title,
-      message: message || '',
-    });
+    return toast.error(title, { description: message });
   };
 
   const warning = (title: string, message?: string) => {
-    return addNotification({
-      type: 'warning',
-      title,
-      message: message || '',
-    });
+    return (
+      toast.warning?.(title, { description: message }) ??
+      toast(title, { description: message })
+    );
   };
 
   const info = (title: string, message?: string) => {
-    return addNotification({
-      type: 'info',
-      title,
-      message: message || '',
-    });
+    return (
+      toast.info?.(title, { description: message }) ??
+      toast(title, { description: message })
+    );
   };
 
   const showApiError = (
-    error: any,
+    err: any,
     defaultMessage = 'Ocorreu um erro inesperado'
   ) => {
-    const message = error?.data?.message || error?.message || defaultMessage;
-    return error(message, 'Tente novamente mais tarde');
+    const msg = err?.data?.message || err?.message || defaultMessage;
+    return error('Erro', msg);
   };
 
+  // API compatível (mantemos assinaturas esperadas)
+  const addNotification = (n: Omit<Notification, 'id'>) => {
+    switch (n.type) {
+      case 'success':
+        return success(n.title, n.message);
+      case 'error':
+        return error(n.title, n.message);
+      case 'warning':
+        return warning(n.title, n.message);
+      case 'info':
+        return info(n.title, n.message);
+      default:
+        return toast(n.title, { description: n.message });
+    }
+  };
+
+  // Métodos sem efeito real (backwards compat)
+  const removeNotification = (_id: string) => {};
+  const clearAllNotifications = () => toast.dismiss();
+
   return {
-    notifications: readonly(notifications),
+    // estados deixados fora; toasts são controlados pelo vue-sonner
     addNotification,
     removeNotification,
     clearAllNotifications,

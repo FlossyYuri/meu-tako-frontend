@@ -3,6 +3,8 @@
     :type="type"
     :disabled="disabled || loading"
     :class="buttonClasses"
+    :aria-disabled="disabled || loading"
+    :aria-busy="loading ? 'true' : 'false'"
     @click="handleClick"
   >
     <Icon v-if="loading" name="lucide:loader-2" class="w-4 h-4 animate-spin" />
@@ -14,6 +16,14 @@
 </template>
 
 <script setup lang="ts">
+interface RouteLocationLike {
+  path?: string
+  name?: string
+  params?: Record<string, string | number>
+  query?: Record<string, any>
+  hash?: string
+}
+
 interface Props {
   variant?: 'primary' | 'secondary' | 'success' | 'error' | 'outline' | 'ghost'
   size?: 'sm' | 'md' | 'lg'
@@ -22,6 +32,9 @@ interface Props {
   loading?: boolean
   icon?: string
   fullWidth?: boolean
+  to?: string | RouteLocationLike
+  href?: string
+  newTab?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -30,7 +43,8 @@ const props = withDefaults(defineProps<Props>(), {
   type: 'button',
   disabled: false,
   loading: false,
-  fullWidth: false
+  fullWidth: false,
+  newTab: false
 })
 
 const emit = defineEmits<{
@@ -50,9 +64,9 @@ const buttonClasses = computed(() => {
   }
 
   const sizeClasses = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-6 py-3 text-base'
+    sm: 'px-2.5 py-1.5 text-sm',
+    md: 'px-3 py-2 text-sm',
+    lg: 'px-4 py-2.5 text-base'
   }
 
   const widthClasses = props.fullWidth ? 'w-full' : ''
@@ -65,9 +79,25 @@ const buttonClasses = computed(() => {
   ].join(' ')
 })
 
-const handleClick = (event: MouseEvent) => {
-  if (!props.disabled && !props.loading) {
+const handleClick = async (event: MouseEvent) => {
+  if (props.disabled || props.loading) return
+
+  // Para botões submit, não emitir evento click para evitar duplicação
+  // O formulário pai deve gerenciar o submit via @submit.prevent
+  if (props.type !== 'submit') {
     emit('click', event)
+  }
+
+  // Navegação interna (rota)
+  if (props.to) {
+    await navigateTo(props.to as any)
+    return
+  }
+
+  // Link externo
+  if (props.href) {
+    if (props.newTab) window.open(props.href, '_blank', 'noopener,noreferrer')
+    else window.location.href = props.href
   }
 }
 </script>

@@ -1,0 +1,255 @@
+<template>
+  <div class="space-y-6">
+    <!-- Loading State -->
+    <div v-if="props.pending" class="space-y-4">
+      <Card>
+        <div class="p-6">
+          <div class="animate-pulse space-y-4">
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+            <div class="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+          </div>
+        </div>
+      </Card>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="props.error" class="text-center py-8">
+      <div class="text-red-500 mb-4">
+        <Icon name="lucide:alert-circle" class="w-12 h-12 mx-auto" />
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+        Erro ao carregar relatório
+      </h3>
+      <p class="text-gray-500 dark:text-gray-400 mb-4">
+        {{ props.error }}
+      </p>
+      <Button @click="handleRefresh"> Tentar Novamente </Button>
+    </div>
+
+    <!-- Report Content -->
+    <div v-else-if="props.data" class="space-y-6">
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <div class="p-6">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div
+                  class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-md flex items-center justify-center"
+                >
+                  <Icon
+                    name="lucide:trending-up"
+                    class="w-5 h-5 text-green-600 dark:text-green-400"
+                  />
+                </div>
+              </div>
+              <div class="ml-4">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  Total de Receitas
+                </p>
+                <p class="text-2xl font-semibold text-gray-900 dark:text-white">
+                  {{ formatCurrency(props.data.totalIncome) }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <Card>
+          <div class="p-6">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div
+                  class="w-8 h-8 bg-red-100 dark:bg-red-900 rounded-md flex items-center justify-center"
+                >
+                  <Icon
+                    name="lucide:trending-down"
+                    class="w-5 h-5 text-red-600 dark:text-red-400"
+                  />
+                </div>
+              </div>
+              <div class="ml-4">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  Total de Despesas
+                </p>
+                <p class="text-2xl font-semibold text-gray-900 dark:text-white">
+                  {{ formatCurrency(props.data.totalExpenses) }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <Card>
+          <div class="p-6">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div
+                  class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-md flex items-center justify-center"
+                >
+                  <Icon
+                    name="lucide:wallet"
+                    class="w-5 h-5 text-blue-600 dark:text-blue-400"
+                  />
+                </div>
+              </div>
+              <div class="ml-4">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  Saldo Líquido
+                </p>
+                <p
+                  class="text-2xl font-semibold"
+                  :class="props.data.netIncome >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
+                >
+                  {{ formatCurrency(props.data.netIncome) }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      <!-- Income Details -->
+      <Card v-if="props.data.incomeDetails.length > 0">
+        <div class="p-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Receitas por Categoria
+          </h3>
+
+          <div class="space-y-4">
+            <div
+              v-for="item in props.data.incomeDetails"
+              :key="item.categoryId"
+              class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
+            >
+              <div class="flex items-center space-x-3">
+                <div
+                  class="w-3 h-3 rounded-full"
+                  :style="{ backgroundColor: generateColor(item.categoryName) }"
+                ></div>
+                <div>
+                  <p class="font-medium text-gray-900 dark:text-white">
+                    {{ item.categoryName || 'Categoria sem nome' }}
+                  </p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ item.transactionCount || 0 }} transação(ões)
+                  </p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="font-semibold text-gray-900 dark:text-white">
+                  {{ formatCurrency(item.totalAmount) }}
+                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  {{ item.percentage }}%
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <!-- Expense Details -->
+      <Card v-if="props.data.expenseDetails.length > 0">
+        <div class="p-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Despesas por Categoria
+          </h3>
+
+          <div class="space-y-4">
+            <div
+              v-for="item in props.data.expenseDetails"
+              :key="item.categoryId"
+              class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
+            >
+              <div class="flex items-center space-x-3">
+                <div
+                  class="w-3 h-3 rounded-full"
+                  :style="{ backgroundColor: generateColor(item.categoryName) }"
+                ></div>
+                <div>
+                  <p class="font-medium text-gray-900 dark:text-white">
+                    {{ item.categoryName || 'Categoria sem nome' }}
+                  </p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ item.transactionCount || 0 }} transação(ões)
+                  </p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="font-semibold text-gray-900 dark:text-white">
+                  {{ formatCurrency(item.totalAmount) }}
+                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  {{ item.percentage }}%
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <!-- Empty State -->
+      <Card
+        v-if="props.data.incomeDetails.length === 0 && props.data.expenseDetails.length === 0"
+      >
+        <div class="p-12 text-center">
+          <Icon
+            name="lucide:bar-chart-3"
+            class="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4"
+          />
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            Nenhuma transação encontrada
+          </h3>
+          <p class="text-gray-500 dark:text-gray-400">
+            Não há transações para o período selecionado.
+          </p>
+        </div>
+      </Card>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import type { MonthlyReport } from '~/types';
+
+const { formatCurrency } = useReports();
+
+// Props
+interface Props {
+  data?: MonthlyReport | null;
+  pending?: boolean;
+  error?: string | null;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  data: null,
+  pending: false,
+  error: null
+});
+
+// Emits
+const emit = defineEmits<{
+  refresh: [];
+}>();
+
+// Methods
+const handleRefresh = () => {
+  emit('refresh');
+};
+
+const generateColor = (seed: string | undefined | null): string => {
+  // Handle undefined, null, or empty string
+  if (!seed || typeof seed !== 'string') {
+    return '#6B7280'; // Default gray color
+  }
+
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const color = Math.abs(hash).toString(16).substring(0, 6);
+  return `#${color.padEnd(6, '0')}`;
+};
+</script>

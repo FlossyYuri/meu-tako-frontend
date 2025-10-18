@@ -117,21 +117,21 @@ const validateForm = () => {
   return true
 }
 
+const authStore = useAuthStore()
+
 const handleSubmit = async () => {
   if (!validateForm()) return
 
+  isLoading.value = true
+  error.value = ''
   try {
-    isLoading.value = true
-    error.value = ''
-
-    // Mock API call - in real app this would call the forgot password endpoint
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
+    await authStore.forgotPassword(form.email)
     isSuccess.value = true
     success('E-mail de recuperação enviado!')
   } catch (err: any) {
-    error.value = err.message || 'Erro ao enviar e-mail de recuperação'
-    showError('Erro ao enviar e-mail de recuperação')
+    const msg = err?.data?.message || err?.message || 'Erro ao enviar e-mail de recuperação'
+    error.value = msg
+    showError('Erro ao enviar e-mail de recuperação', msg)
   } finally {
     isLoading.value = false
   }

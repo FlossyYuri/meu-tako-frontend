@@ -1,17 +1,23 @@
+/* Updated type definitions aligned with API docs */
+
 // User types
 export interface User {
   user_id: string;
   name: string;
   email: string;
   whatsapp?: string;
+  phone?: string;
+  email_verified: boolean;
+  whatsapp_verified: boolean;
+  active: boolean;
   created_at: string;
   updated_at: string;
 }
 
 export interface AuthResponse {
-  access_token: string;
-  refresh_token: string;
   user: User;
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface LoginRequest {
@@ -32,8 +38,30 @@ export interface UpdateProfileRequest {
 }
 
 export interface ChangePasswordRequest {
-  current_password: string;
-  new_password: string;
+  currentPassword: string;
+  newPassword: string;
+}
+
+// Auth verification types
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  password: string;
+}
+
+export interface VerifyEmailRequest {
+  code: string;
+}
+
+export interface VerifyWhatsAppRequest {
+  code: string;
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
 }
 
 // Wallet types
@@ -59,8 +87,10 @@ export interface Category {
   category_id: string;
   name: string;
   description?: string;
-  color: string;
-  icon: string;
+  color?: string; // opcional no retorno
+  icon?: string; // opcional no retorno
+  // A API usa 'active'; mantemos compat e também retemos 'is_active' para retrocompatibilidade interna
+  active?: boolean;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -69,15 +99,11 @@ export interface Category {
 export interface CreateCategoryRequest {
   name: string;
   description?: string;
-  color: string;
-  icon: string;
 }
 
 export interface UpdateCategoryRequest {
   name?: string;
   description?: string;
-  color?: string;
-  icon?: string;
 }
 
 // Transaction types
@@ -85,13 +111,44 @@ export interface Transaction {
   transaction_id: string;
   user_id: string;
   wallet_id: string;
-  amount: number;
-  description?: string;
-  date: string;
+  expense_id?: string | null;
+  income_id?: string | null;
+  amount: string | number;
   type: 'income' | 'expense' | 'transfer';
-  category?: Category;
+  date: string;
   created_at: string;
   updated_at: string;
+  wallet?: {
+    wallet_id: string;
+    user_id: string;
+    wallet_name: string;
+    balance: string;
+    is_default: boolean;
+    created_at: string;
+    updated_at: string;
+  };
+  income?: {
+    income_id: string;
+    user_id: string;
+    income_category_id: string;
+    received: boolean;
+    amount: string;
+    date: string;
+    description?: string;
+    created_at: string;
+    active: boolean;
+  } | null;
+  expense?: {
+    expense_id: string;
+    user_id: string;
+    expense_category_id: string;
+    paid: boolean;
+    amount: string;
+    date: string;
+    description?: string;
+    created_at: string;
+    active: boolean;
+  } | null;
 }
 
 export interface Income {
@@ -125,17 +182,19 @@ export interface Expense {
 export interface CreateIncomeRequest {
   income_category_id: string;
   amount: number;
-  description?: string;
   date: string;
+  description?: string;
   received?: boolean;
+  wallet_id?: string;
 }
 
 export interface CreateExpenseRequest {
   expense_category_id: string;
   amount: number;
-  description?: string;
   date: string;
+  description?: string;
   paid?: boolean;
+  wallet_id?: string;
 }
 
 export interface TransferRequest {
@@ -149,15 +208,23 @@ export interface TransferRequest {
 export interface Goal {
   goal_id: string;
   user_id: string;
+  expense_category_id?: string;
   title: string;
   description?: string;
   target_amount: number;
   current_amount: number;
   start_date: string;
   end_date: string;
-  is_active: boolean;
+  status: 'active' | 'inactive';
   created_at: string;
   updated_at: string;
+  category?: Category;
+  // Campos adicionais da API
+  progress?: number;
+  is_completed?: boolean;
+  is_expired?: boolean;
+  days_remaining?: number;
+  monthly_target?: number;
 }
 
 export interface CreateGoalRequest {
@@ -166,6 +233,7 @@ export interface CreateGoalRequest {
   target_amount: number;
   start_date: string;
   end_date: string;
+  expense_category_id?: string;
 }
 
 export interface UpdateGoalRequest {
@@ -174,10 +242,25 @@ export interface UpdateGoalRequest {
   target_amount?: number;
   start_date?: string;
   end_date?: string;
+  expense_category_id?: string;
 }
 
 export interface ContributeToGoalRequest {
   amount: number;
+  description?: string;
+}
+
+export interface GoalContribution {
+  contribution_id: string;
+  goal_id: string;
+  amount: number;
+  description?: string;
+  contributed_at: string;
+}
+
+export interface GoalWithContributions {
+  goal: Goal;
+  contributions: GoalContribution[];
 }
 
 export interface GoalProgress {
@@ -194,9 +277,10 @@ export interface Limit {
   limit_id: string;
   user_id: string;
   expense_category_id: string;
-  amount: number;
+  limit_amount: number;
   start_date: string;
   end_date: string;
+  description?: string;
   is_active: boolean;
   category: Category;
   created_at: string;
@@ -205,71 +289,123 @@ export interface Limit {
 
 export interface CreateLimitRequest {
   expense_category_id: string;
-  amount: number;
+  limit_amount: number;
   start_date: string;
   end_date: string;
+  description?: string;
 }
 
 export interface UpdateLimitRequest {
-  amount?: number;
+  expense_category_id?: string;
+  limit_amount?: number;
   start_date?: string;
   end_date?: string;
+  description?: string;
 }
 
 export interface LimitStatus {
-  limit_amount: number;
-  used: number;
-  remaining: number;
-  percentage: number;
+  limit: {
+    limit_id: string;
+    user_id: string;
+    expense_category_id: string;
+    limit_amount: string;
+    start_date: string;
+    end_date: string;
+    active: boolean;
+    created_at: string;
+    updated_at: string;
+    category: {
+      expense_category_id: string;
+      name: string;
+      description: string;
+      priority: number;
+      active: boolean;
+    };
+  };
+  totalSpent: number;
+  remainingAmount: number;
+  percentageUsed: number;
+  isExceeded: boolean;
+  isNearLimit: boolean;
 }
 
 // Dashboard types
 export interface DashboardSummary {
-  total_income: number;
-  total_expense: number;
-  balance: number;
-  top_expense_categories: Array<{
-    name: string;
-    total: number;
-  }>;
-  recent_transactions: Transaction[];
+  totalBalance: number;
+  monthlyIncome: number;
+  monthlyExpenses: number;
+  monthlyNet: number;
+  activeGoals: number;
+  activeLimits: number;
+  wallets: number;
 }
 
-export interface BalanceSummary {
-  total_balance: number;
+export interface DashboardBalance {
+  totalBalance: number;
   wallets: Array<{
     wallet_id: string;
     wallet_name: string;
-    balance: number;
+    balance: string;
+    is_default: boolean;
   }>;
+}
+
+export interface DashboardData {
+  summary: DashboardSummary;
+  balance: DashboardBalance;
+  recentTransactions: Transaction[];
+  activeGoals: Goal[];
+  activeLimits: Limit[];
 }
 
 // Report types
 export interface MonthlyReport {
-  month: string;
-  year: number;
-  total_income: number;
-  total_expense: number;
-  balance: number;
-  categories: Array<{
-    name: string;
-    income: number;
-    expense: number;
+  period: {
+    year: number;
+    month: number;
+  };
+  totalIncome: number;
+  totalExpenses: number;
+  netIncome: number;
+  incomeDetails: Array<{
+    categoryId: string;
+    categoryName: string;
+    totalAmount: number;
+    transactionCount: number;
+    percentage: number;
+  }>;
+  expenseDetails: Array<{
+    categoryId: string;
+    categoryName: string;
+    totalAmount: number;
+    transactionCount: number;
+    percentage: number;
   }>;
 }
 
 export interface CategoryReport {
-  category_name: string;
-  total_amount: number;
-  transaction_count: number;
-  percentage: number;
+  period: {
+    startDate: string;
+    endDate: string;
+  };
+  totalExpenses: number;
+  categories: Array<{
+    categoryId: string;
+    categoryName: string;
+    totalAmount: number;
+    transactionCount: number;
+    percentage: number;
+  }>;
 }
 
 export interface TrendReport {
-  period: string;
-  income_trend: number;
-  expense_trend: number;
-  balance_trend: number;
+  trends: Array<{
+    month: number;
+    year: number;
+    income: number;
+    expenses: number;
+    net: number;
+  }>;
 }
 
 // API Response types
@@ -352,9 +488,123 @@ export interface DateRange {
   end: string;
 }
 
+// Shopping List types
+export interface ShoppingList {
+  shopping_list_id: string;
+  user_id: string;
+  name: string;
+  description?: string;
+  total_value: number;
+  status: 'draft' | 'active' | 'completed' | 'cancelled';
+  created_at: string;
+  updated_at: string;
+  completed_at?: string | null;
+  active: boolean;
+  items: ShoppingListItem[];
+}
+
+export interface ShoppingListItem {
+  item_id: string;
+  shopping_list_id: string;
+  expense_category_id?: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  price: number;
+  is_purchased: boolean;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  active: boolean;
+  category?: Category;
+}
+
+export interface CreateShoppingListRequest {
+  name: string;
+  description?: string;
+  status?: 'draft' | 'active' | 'completed' | 'cancelled';
+}
+
+export interface UpdateShoppingListRequest {
+  name?: string;
+  description?: string;
+  status?: 'draft' | 'active' | 'completed' | 'cancelled';
+}
+
+export interface CreateShoppingListItemRequest {
+  name: string;
+  quantity?: number;
+  unit?: string;
+  price?: number;
+  expense_category_id?: string;
+  notes?: string;
+}
+
+export interface UpdateShoppingListItemRequest {
+  name?: string;
+  quantity?: number;
+  unit?: string;
+  price?: number;
+  expense_category_id?: string;
+  notes?: string;
+}
+
+// Reminder types
+export interface Reminder {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string;
+  amount?: number;
+  priority: ReminderPriority;
+  status: ReminderStatus;
+  recurrence: ReminderRecurrence;
+  scheduledFor: string;
+  notificationChannels: NotificationChannel[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateReminderRequest {
+  title: string;
+  description?: string;
+  amount?: number;
+  priority?: ReminderPriority;
+  recurrence: ReminderRecurrence;
+  scheduledFor: string;
+  notificationChannels: NotificationChannel[];
+}
+
+export interface UpdateReminderRequest {
+  title?: string;
+  description?: string;
+  amount?: number;
+  priority?: ReminderPriority;
+  recurrence?: ReminderRecurrence;
+  scheduledFor?: string;
+  notificationChannels?: NotificationChannel[];
+  status?: ReminderStatus;
+}
+
+export type ReminderPriority = 'low' | 'medium' | 'high';
+export type ReminderStatus = 'active' | 'paused' | 'completed' | 'cancelled';
+export type ReminderRecurrence =
+  | 'once'
+  | 'daily'
+  | 'weekly'
+  | 'monthly'
+  | 'yearly';
+export type NotificationChannel = 'whatsapp' | 'email' | 'push';
+
 // Search types
 export interface SearchResult {
-  type: 'transaction' | 'category' | 'wallet' | 'goal';
+  type:
+    | 'transaction'
+    | 'category'
+    | 'wallet'
+    | 'goal'
+    | 'shopping-list'
+    | 'reminder';
   id: string;
   title: string;
   description?: string;

@@ -12,7 +12,7 @@ export default defineNuxtConfig({
     '@vee-validate/nuxt',
     '@vueuse/nuxt',
   ],
-  css: ['~/css/main.css'],
+  css: ['~/assets/css/main.css'],
   components: [
     {
       path: '~/components',
@@ -22,6 +22,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: process.env.API_BASE_URL || 'http://localhost:5000/api',
+      vapidPublicKey: process.env.NUXT_PUBLIC_VAPID_PUBLIC_KEY || '',
     },
   },
   app: {
@@ -34,6 +35,72 @@ export default defineNuxtConfig({
           name: 'description',
           content:
             'Gerencie suas finanças pessoais de forma simples e eficiente',
+        },
+      ],
+      link: [
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '48x48',
+          href: '/icons/48-48.png',
+        },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '72x72',
+          href: '/icons/72-72.png',
+        },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '96x96',
+          href: '/icons/96-96.png',
+        },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '144x144',
+          href: '/icons/144-144.png',
+        },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '192x192',
+          href: '/icons/192-192.png',
+        },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '512x512',
+          href: '/icons/512-512.png',
+        },
+        {
+          rel: 'apple-touch-icon',
+          sizes: '192x192',
+          href: '/icons/192-192.png',
+        },
+        {
+          rel: 'apple-touch-icon',
+          sizes: '512x512',
+          href: '/icons/512-512.png',
+        },
+      ],
+      script: [
+        {
+          innerHTML: `
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                  .then(function(registration) {
+                    console.log('ServiceWorker registration successful');
+                  })
+                  .catch(function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                  });
+              });
+            }
+          `,
+          type: 'text/javascript',
         },
       ],
     },

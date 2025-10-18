@@ -2,18 +2,18 @@
   <div :class="cardClasses">
     <div
       v-if="$slots.header"
-      class="px-6 py-4 border-b border-gray-200 dark:border-gray-700"
+      :class="['border-b border-gray-200 dark:border-gray-700', headerPaddingClass]"
     >
       <slot name="header" />
     </div>
 
-    <div class="p-6">
+    <div :class="contentPaddingClass">
       <slot />
     </div>
 
     <div
       v-if="$slots.footer"
-      class="px-6 py-4 border-t border-gray-200 dark:border-gray-700"
+      :class="['border-t border-gray-200 dark:border-gray-700', footerPaddingClass]"
     >
       <slot name="footer" />
     </div>
@@ -48,4 +48,16 @@ const cardClasses = computed(() => {
 
   return [baseClasses, variantClasses[props.variant], hoverClasses].join(' ')
 })
+
+// Padding responsivo por tamanho
+const paddingMap = {
+  none: { content: 'p-0', header: 'px-0 py-0', footer: 'px-0 py-0' },
+  sm:   { content: 'p-2.5', header: 'px-2.5 py-2', footer: 'px-2.5 py-2' },
+  md:   { content: 'p-3 sm:p-4', header: 'px-3 sm:px-4 py-2.5 sm:py-3', footer: 'px-3 sm:px-4 py-2.5 sm:py-3' },
+  lg:   { content: 'p-4 sm:p-6', header: 'px-4 sm:px-6 py-3 sm:py-4', footer: 'px-4 sm:px-6 py-3 sm:py-4' }
+} as const
+
+const contentPaddingClass = computed(() => paddingMap[props.padding].content)
+const headerPaddingClass = computed(() => paddingMap[props.padding].header)
+const footerPaddingClass = computed(() => paddingMap[props.padding].footer)
 </script>
