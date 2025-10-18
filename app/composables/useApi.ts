@@ -14,10 +14,32 @@ export const useApi = () => {
         };
       }
     },
-    onResponseError({ response }) {
+    onResponseError({ response, request, options }) {
       if (response.status === 401) {
-        authStore.logout();
-        if (import.meta.client) navigateTo('/auth/login');
+        // Try to refresh token before logging out
+        if (authStore.refreshToken) {
+          return authStore
+            .refreshAuthToken()
+            .then(() => {
+              // Retry the original request with new token
+              if (authStore.token) {
+                options.headers = {
+                  ...options.headers,
+                  Authorization: `Bearer ${authStore.token}`,
+                };
+                return $fetch(request, options);
+              }
+            })
+            .catch(() => {
+              // If refresh fails, logout
+              authStore.logout();
+              if (import.meta.client) navigateTo('/auth/login');
+            });
+        } else {
+          // No refresh token, logout immediately
+          authStore.logout();
+          if (import.meta.client) navigateTo('/auth/login');
+        }
       }
     },
   });
@@ -29,7 +51,10 @@ export const useApi = () => {
   };
 
   // Formatação monetária: sempre prefixar com 'MT'
-  const formatCurrency = (amount: number, _currency: string = 'MZN'): string => {
+  const formatCurrency = (
+    amount: number,
+    _currency: string = 'MZN'
+  ): string => {
     const formatted = new Intl.NumberFormat('pt-MZ', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -69,7 +94,8 @@ export const useApi = () => {
 
   const formatDate = (date: string | Date): string => {
     if (!date) return '';
-    if (typeof date === 'string' && isDateOnly(date)) return formatDateOnlyString(date);
+    if (typeof date === 'string' && isDateOnly(date))
+      return formatDateOnlyString(date);
     const dt = toValidDate(date);
     if (!dt) return 'Data inválida';
     return new Intl.DateTimeFormat('pt-MZ', {
@@ -81,7 +107,8 @@ export const useApi = () => {
 
   const formatDateTime = (date: string | Date): string => {
     if (!date) return '';
-    if (typeof date === 'string' && isDateOnly(date)) return formatDateOnlyString(date);
+    if (typeof date === 'string' && isDateOnly(date))
+      return formatDateOnlyString(date);
     const dt = toValidDate(date);
     if (!dt) return 'Data inválida';
     return new Intl.DateTimeFormat('pt-MZ', {
@@ -102,11 +129,14 @@ export const useApi = () => {
       const diffInSeconds = Math.floor((now.getTime() - dt.getTime()) / 1000);
       if (diffInSeconds < 60) return 'agora mesmo';
       const diffInMinutes = Math.floor(diffInSeconds / 60);
-      if (diffInMinutes < 60) return `há ${diffInMinutes} minuto${diffInMinutes > 1 ? 's' : ''}`;
+      if (diffInMinutes < 60)
+        return `há ${diffInMinutes} minuto${diffInMinutes > 1 ? 's' : ''}`;
       const diffInHours = Math.floor(diffInMinutes / 60);
-      if (diffInHours < 24) return `há ${diffInHours} hora${diffInHours > 1 ? 's' : ''}`;
+      if (diffInHours < 24)
+        return `há ${diffInHours} hora${diffInHours > 1 ? 's' : ''}`;
       const diffInDays = Math.floor(diffInHours / 24);
-      if (diffInDays < 30) return `há ${diffInDays} dia${diffInDays > 1 ? 's' : ''}`;
+      if (diffInDays < 30)
+        return `há ${diffInDays} dia${diffInDays > 1 ? 's' : ''}`;
       return formatDate(date);
     }
     const dt = toValidDate(date);
@@ -115,17 +145,21 @@ export const useApi = () => {
     const diffInSeconds = Math.floor((now.getTime() - dt.getTime()) / 1000);
     if (diffInSeconds < 60) return 'agora mesmo';
     const diffInMinutes = Math.floor(diffInSeconds / 60);
-    if (diffInMinutes < 60) return `há ${diffInMinutes} minuto${diffInMinutes > 1 ? 's' : ''}`;
+    if (diffInMinutes < 60)
+      return `há ${diffInMinutes} minuto${diffInMinutes > 1 ? 's' : ''}`;
     const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `há ${diffInHours} hora${diffInHours > 1 ? 's' : ''}`;
+    if (diffInHours < 24)
+      return `há ${diffInHours} hora${diffInHours > 1 ? 's' : ''}`;
     const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 30) return `há ${diffInDays} dia${diffInDays > 1 ? 's' : ''}`;
+    if (diffInDays < 30)
+      return `há ${diffInDays} dia${diffInDays > 1 ? 's' : ''}`;
     return formatDate(dt);
   };
 
   const formatISODate = (date: string | Date): string => {
     if (!date) return '';
-    if (typeof date === 'string' && isDateOnly(date)) return formatDateOnlyString(date);
+    if (typeof date === 'string' && isDateOnly(date))
+      return formatDateOnlyString(date);
     const dt = toValidDate(date);
     if (!dt) return 'Data inválida';
     return new Intl.DateTimeFormat('pt-MZ', {
@@ -137,7 +171,8 @@ export const useApi = () => {
 
   const formatISODateTime = (date: string | Date): string => {
     if (!date) return '';
-    if (typeof date === 'string' && isDateOnly(date)) return formatDateOnlyString(date);
+    if (typeof date === 'string' && isDateOnly(date))
+      return formatDateOnlyString(date);
     const dt = toValidDate(date);
     if (!dt) return 'Data inválida';
     return new Intl.DateTimeFormat('pt-MZ', {
@@ -152,7 +187,8 @@ export const useApi = () => {
 
   const formatDisplayDate = (date: string | Date): string => {
     if (!date) return '';
-    if (typeof date === 'string' && isDateOnly(date)) return formatDateOnlyString(date);
+    if (typeof date === 'string' && isDateOnly(date))
+      return formatDateOnlyString(date);
     const dt = toValidDate(date);
     if (!dt) return 'Data inválida';
     return new Intl.DateTimeFormat('pt-MZ', {
@@ -164,7 +200,10 @@ export const useApi = () => {
 
   const generateId = (): string => Math.random().toString(36).substr(2, 9);
 
-  const debounce = <T extends (...args: any[]) => any>(func: T, wait: number) => {
+  const debounce = <T extends (...args: any[]) => any>(
+    func: T,
+    wait: number
+  ) => {
     let timeout: ReturnType<typeof setTimeout>;
     return (...args: Parameters<T>) => {
       clearTimeout(timeout);
@@ -172,7 +211,10 @@ export const useApi = () => {
     };
   };
 
-  const throttle = <T extends (...args: any[]) => any>(func: T, limit: number) => {
+  const throttle = <T extends (...args: any[]) => any>(
+    func: T,
+    limit: number
+  ) => {
     let inThrottle = false;
     return (...args: Parameters<T>) => {
       if (!inThrottle) {
@@ -186,18 +228,26 @@ export const useApi = () => {
   const validateEmail = (email: string): boolean =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const validatePassword = (password: string): { isValid: boolean; errors: string[] } => {
+  const validatePassword = (
+    password: string
+  ): { isValid: boolean; errors: string[] } => {
     const errors: string[] = [];
-    if (password.length < 6) errors.push('A senha deve ter pelo menos 6 caracteres');
-    if (!/[A-Z]/.test(password)) errors.push('A senha deve conter pelo menos uma letra maiúscula');
-    if (!/[a-z]/.test(password)) errors.push('A senha deve conter pelo menos uma letra minúscula');
-    if (!/\d/.test(password)) errors.push('A senha deve conter pelo menos um número');
+    if (password.length < 6)
+      errors.push('A senha deve ter pelo menos 6 caracteres');
+    if (!/[A-Z]/.test(password))
+      errors.push('A senha deve conter pelo menos uma letra maiúscula');
+    if (!/[a-z]/.test(password))
+      errors.push('A senha deve conter pelo menos uma letra minúscula');
+    if (!/\d/.test(password))
+      errors.push('A senha deve conter pelo menos um número');
     return { isValid: errors.length === 0, errors };
   };
 
-  const validatePhone = (phone: string): boolean => /^\+258[0-9]{9}$/.test(phone);
+  const validatePhone = (phone: string): boolean =>
+    /^\+258[0-9]{9}$/.test(phone);
 
-  const sanitizeInput = (input: string): string => input.trim().replace(/[<>]/g, '');
+  const sanitizeInput = (input: string): string =>
+    input.trim().replace(/[<>]/g, '');
 
   const copyToClipboard = async (text: string): Promise<boolean> => {
     try {
@@ -209,7 +259,11 @@ export const useApi = () => {
     }
   };
 
-  const downloadFile = (data: any, filename: string, type = 'application/json') => {
+  const downloadFile = (
+    data: any,
+    filename: string,
+    type = 'application/json'
+  ) => {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -226,7 +280,7 @@ export const useApi = () => {
     if (bytes === 0) return '0 Bytes';
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return `${Math.round((bytes / Math.pow(1024, i)) * 100) / 100} ${sizes[i]}`;
-    };
+  };
 
   const calculatePercentage = (value: number, total: number): number => {
     if (total === 0) return 0;
@@ -243,7 +297,12 @@ export const useApi = () => {
   };
 
   const getInitials = (name: string): string =>
-    name.split(' ').map((w) => w.charAt(0)).join('').toUpperCase().slice(0, 2);
+    name
+      .split(' ')
+      .map((w) => w.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
 
   return {
     api,

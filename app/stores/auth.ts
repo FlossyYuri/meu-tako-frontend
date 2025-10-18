@@ -5,6 +5,11 @@ import type {
   LoginRequest,
   RegisterRequest,
   ChangePasswordRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+  VerifyEmailRequest,
+  VerifyWhatsAppRequest,
+  RefreshTokenRequest,
 } from '~/types';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -65,14 +70,23 @@ export const useAuthStore = defineStore('auth', () => {
       isLoading.value = true;
       error.value = null;
 
-      const response = await $fetch<{ message: string; user: User }>(
-        '/auth/register',
-        {
-          method: 'POST',
-          body: userData,
-          baseURL: useRuntimeConfig().public.apiBase,
-        }
-      );
+      const response = await $fetch<AuthResponse>('/auth/register', {
+        method: 'POST',
+        body: userData,
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+
+      // Auto-authenticate after successful registration
+      user.value = response.user;
+      token.value = response.accessToken;
+      refreshToken.value = response.refreshToken;
+
+      // Store in localStorage
+      if (import.meta.client) {
+        localStorage.setItem('auth_token', response.accessToken);
+        localStorage.setItem('auth_refresh_token', response.refreshToken);
+        localStorage.setItem('auth_user', JSON.stringify(response.user));
+      }
 
       return response;
     } catch (err: any) {
@@ -227,6 +241,153 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
+  const forgotPassword = async (email: string) => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+
+      await $fetch('/auth/forgot-password', {
+        method: 'POST',
+        body: { email },
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+
+      return true;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao solicitar reset de senha';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const resetPassword = async (token: string, password: string) => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+
+      await $fetch('/auth/reset-password', {
+        method: 'POST',
+        body: { token, password },
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+
+      return true;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao redefinir senha';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const sendEmailVerification = async () => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+
+      await $fetch('/auth/send-email-verification', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+
+      return true;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao enviar verificação de email';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const verifyEmail = async (code: string) => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+
+      await $fetch('/auth/verify-email', {
+        method: 'POST',
+        body: { code },
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+
+      // Update user verification status
+      if (user.value) {
+        user.value.email_verified = true;
+        if (import.meta.client) {
+          localStorage.setItem('auth_user', JSON.stringify(user.value));
+        }
+      }
+
+      return true;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao verificar email';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const sendWhatsAppVerification = async () => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+
+      await $fetch('/auth/send-whatsapp-verification', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+
+      return true;
+    } catch (err: any) {
+      error.value =
+        err.data?.message || 'Erro ao enviar verificação de WhatsApp';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const verifyWhatsApp = async (code: string) => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+
+      await $fetch('/auth/verify-whatsapp', {
+        method: 'POST',
+        body: { code },
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+
+      // Update user verification status
+      if (user.value) {
+        user.value.whatsapp_verified = true;
+        if (import.meta.client) {
+          localStorage.setItem('auth_user', JSON.stringify(user.value));
+        }
+      }
+
+      return true;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao verificar WhatsApp';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
   const clearError = () => {
     error.value = null;
   };
@@ -253,6 +414,12 @@ export const useAuthStore = defineStore('auth', () => {
     updateProfile,
     changePassword,
     deleteAccount,
+    forgotPassword,
+    resetPassword,
+    sendEmailVerification,
+    verifyEmail,
+    sendWhatsAppVerification,
+    verifyWhatsApp,
     clearError,
   };
 });

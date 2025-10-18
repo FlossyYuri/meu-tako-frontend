@@ -243,7 +243,7 @@ const handleSubmit = async () => {
     })
 
     success('Conta criada com sucesso!')
-    await navigateTo('/auth/login')
+    await navigateTo('/')
   } catch (err: any) {
     showError('Erro ao criar conta', err.message || 'Tente novamente mais tarde')
   }

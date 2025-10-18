@@ -88,10 +88,16 @@
         </div>
       </div>
 
+      <!-- Verification Banner -->
+      <VerificationBanner />
+
       <!-- Page content -->
       <main class="flex-1 p-8">
         <slot />
       </main>
+
+      <!-- Verification Modal -->
+      <VerificationModal />
     </div>
   </div>
 </template>

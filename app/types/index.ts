@@ -6,6 +6,10 @@ export interface User {
   name: string;
   email: string;
   whatsapp?: string;
+  phone?: string;
+  email_verified: boolean;
+  whatsapp_verified: boolean;
+  active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -36,6 +40,28 @@ export interface UpdateProfileRequest {
 export interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;
+}
+
+// Auth verification types
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  password: string;
+}
+
+export interface VerifyEmailRequest {
+  code: string;
+}
+
+export interface VerifyWhatsAppRequest {
+  code: string;
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
 }
 
 // Wallet types

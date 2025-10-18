@@ -38,11 +38,14 @@
         <div class="flex">
           <Icon name="lucide:check-circle" class="w-5 h-5 text-success-400" />
           <div class="ml-3">
-            <h3 class="text-sm font-medium text-success-800 dark:text-success-200">
+            <h3
+              class="text-sm font-medium text-success-800 dark:text-success-200"
+            >
               E-mail enviado com sucesso!
             </h3>
             <p class="text-sm text-success-700 dark:text-success-300 mt-1">
-              Verifique sua caixa de entrada e siga as instruções para redefinir sua senha.
+              Verifique sua caixa de entrada e siga as instruções para redefinir
+              sua senha.
             </p>
           </div>
         </div>
@@ -114,17 +117,15 @@ const validateForm = () => {
   return true
 }
 
+const authStore = useAuthStore()
+
 const handleSubmit = async () => {
   if (!validateForm()) return
 
   isLoading.value = true
   error.value = ''
   try {
-    await $fetch('/auth/forgot-password', {
-      method: 'POST',
-      body: { email: form.email },
-      baseURL: useRuntimeConfig().public.apiBase
-    })
+    await authStore.forgotPassword(form.email)
     isSuccess.value = true
     success('E-mail de recuperação enviado!')
   } catch (err: any) {
