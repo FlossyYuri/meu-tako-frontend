@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  frontend:
+    build: .
+    container_name: meutako-frontend
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - VIRTUAL_HOST=${FRONTEND_HOST}
+      - LETSENCRYPT_HOST=${FRONTEND_HOST}
+      - LETSENCRYPT_EMAIL=${EMAIL}
+    expose:
+      - ${PORT}
+    networks:
+      - nginx-proxy
+
+networks:
+  nginx-proxy:
+    external: true
