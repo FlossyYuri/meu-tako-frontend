@@ -12,7 +12,9 @@ services:
       - LETSENCRYPT_HOST=${FRONTEND_HOST}
       - LETSENCRYPT_EMAIL=${EMAIL}
     expose:
-      - ${PORT}
+      - "3000"
+    ports:
+      - "3000:3000"
     networks:
       - nginx-proxy
 
