@@ -521,9 +521,62 @@ export interface UpdateShoppingListItemRequest {
   notes?: string;
 }
 
+// Reminder types
+export interface Reminder {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string;
+  amount?: number;
+  priority: ReminderPriority;
+  status: ReminderStatus;
+  recurrence: ReminderRecurrence;
+  scheduledFor: string;
+  notificationChannels: NotificationChannel[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateReminderRequest {
+  title: string;
+  description?: string;
+  amount?: number;
+  priority?: ReminderPriority;
+  recurrence: ReminderRecurrence;
+  scheduledFor: string;
+  notificationChannels: NotificationChannel[];
+}
+
+export interface UpdateReminderRequest {
+  title?: string;
+  description?: string;
+  amount?: number;
+  priority?: ReminderPriority;
+  recurrence?: ReminderRecurrence;
+  scheduledFor?: string;
+  notificationChannels?: NotificationChannel[];
+  status?: ReminderStatus;
+}
+
+export type ReminderPriority = 'low' | 'medium' | 'high';
+export type ReminderStatus = 'active' | 'paused' | 'completed' | 'cancelled';
+export type ReminderRecurrence =
+  | 'once'
+  | 'daily'
+  | 'weekly'
+  | 'monthly'
+  | 'yearly';
+export type NotificationChannel = 'whatsapp' | 'email' | 'push';
+
 // Search types
 export interface SearchResult {
-  type: 'transaction' | 'category' | 'wallet' | 'goal' | 'shopping-list';
+  type:
+    | 'transaction'
+    | 'category'
+    | 'wallet'
+    | 'goal'
+    | 'shopping-list'
+    | 'reminder';
   id: string;
   title: string;
   description?: string;
