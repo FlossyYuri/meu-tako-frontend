@@ -10,6 +10,7 @@ export interface User {
   email_verified: boolean;
   whatsapp_verified: boolean;
   active: boolean;
+  is_admin: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -92,6 +93,8 @@ export interface Category {
   // A API usa 'active'; mantemos compat e também retemos 'is_active' para retrocompatibilidade interna
   active?: boolean;
   is_active: boolean;
+  is_default?: boolean; // indica se é uma categoria padrão do sistema
+  user_id?: string | null; // null para categorias padrão, string para categorias personalizadas
   created_at: string;
   updated_at: string;
 }
@@ -595,6 +598,141 @@ export type ReminderRecurrence =
   | 'monthly'
   | 'yearly';
 export type NotificationChannel = 'whatsapp' | 'email' | 'push';
+
+// Notification Template types
+export interface NotificationTemplate {
+  id: string;
+  name: string;
+  title?: string;
+  content: string;
+  channel: NotificationChannel;
+  language: string;
+  variables: string[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateNotificationTemplateRequest {
+  name: string;
+  title?: string;
+  content: string;
+  channel: NotificationChannel;
+  language?: string;
+  variables?: string[];
+  isActive?: boolean;
+}
+
+export interface UpdateNotificationTemplateRequest {
+  title?: string;
+  content?: string;
+  language?: string;
+  variables?: string[];
+  isActive?: boolean;
+}
+
+export interface TemplateVariable {
+  name: string;
+  type: 'string' | 'number' | 'date' | 'boolean';
+  required: boolean;
+  description?: string;
+  defaultValue?: any;
+}
+
+export interface NotificationChannelConfig {
+  type: 'whatsapp' | 'email' | 'push';
+  name: string;
+  icon: string;
+  maxLength?: number;
+}
+
+export interface NotificationStatus {
+  status: 'pending' | 'sent' | 'failed' | 'delivered' | 'read';
+  label: string;
+  color: string;
+}
+
+export interface NotificationHistory {
+  id: string;
+  userId: string;
+  channel: NotificationChannel['type'];
+  status: NotificationStatus['status'];
+  template: string;
+  content: string;
+  recipient: string;
+  retryCount: number;
+  sentAt?: string;
+  deliveredAt?: string;
+  readAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NotificationStats {
+  total: number;
+  sent: number;
+  delivered: number;
+  read: number;
+  failed: number;
+  pending: number;
+  byChannel: Record<NotificationChannel['type'], number>;
+  byStatus: Record<NotificationStatus['status'], number>;
+  last30Days: {
+    total: number;
+    sent: number;
+    delivered: number;
+    read: number;
+  };
+}
+
+export interface ScheduledNotification {
+  id: string;
+  userId: string;
+  channel: NotificationChannel['type'];
+  template: string;
+  data: Record<string, any>;
+  type: 'once' | 'recurring';
+  cronExpression?: string;
+  status: 'active' | 'paused' | 'cancelled';
+  executionCount: number;
+  maxExecutions?: number;
+  lastExecutedAt?: string;
+  nextExecutionAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TemplatePreviewData {
+  template: {
+    name: string;
+    channel: NotificationChannel['type'];
+    language: string;
+  };
+  processed: {
+    content: string;
+    subject?: string;
+  };
+  originalData: Record<string, any>;
+}
+
+export interface SendNotificationRequest {
+  channel: NotificationChannel['type'];
+  template: string;
+  data?: Record<string, any>;
+  content?: string;
+  subject?: string;
+  recipient?: string;
+}
+
+export interface ScheduleNotificationRequest {
+  channel: NotificationChannel['type'];
+  template: string;
+  data?: Record<string, any>;
+  type: 'once' | 'recurring';
+  scheduledFor?: string;
+  cronExpression?: string;
+  maxExecutions?: number;
+}
 
 // Search types
 export interface SearchResult {

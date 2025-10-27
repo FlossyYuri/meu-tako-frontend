@@ -27,6 +27,8 @@ const normalizeCategory = (raw: AnyCategory): Category => {
     // manter ambas para compat
     active: isActive,
     is_active: isActive,
+    is_default: raw.is_default ?? false,
+    user_id: raw.user_id ?? null,
     created_at: raw.created_at ?? raw.createdAt ?? '',
     updated_at: raw.updated_at ?? raw.updatedAt ?? '',
   };

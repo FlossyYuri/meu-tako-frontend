@@ -83,9 +83,14 @@
           >
             <div class="flex items-center gap-3">
               <div>
-                <p class="font-medium text-gray-900 dark:text-white">
-                  {{ c.name }}
-                </p>
+                <div class="flex items-center gap-2">
+                  <p class="font-medium text-gray-900 dark:text-white">
+                    {{ c.name }}
+                  </p>
+                  <Badge v-if="!c.is_default" variant="secondary" size="sm">
+                    Custom
+                  </Badge>
+                </div>
                 <p
                   v-if="c.description"
                   class="text-sm text-gray-500 dark:text-gray-400"
@@ -107,6 +112,7 @@
                 size="sm"
                 variant="error"
                 icon="lucide:trash-2"
+                :disabled="c.is_default"
                 @click="onDelete(c, 'income')"
                 >Excluir</Button
               >
@@ -124,6 +130,7 @@
                   label="Excluir"
                   icon="lucide:trash-2"
                   variant="danger"
+                  :disabled="c.is_default"
                   @click="onDelete(c, 'income')"
                 />
               </ActionDropdown>
@@ -168,6 +175,9 @@
                   </p>
                   <Badge :variant="c.active ? 'success' : 'warning'" size="sm">
                     {{ c.active ? 'Ativa' : 'Inativa' }}
+                  </Badge>
+                  <Badge v-if="!c.is_default" variant="secondary" size="sm">
+                    Custom
                   </Badge>
                   <Badge
                     v-if="categoryHasLimit(c.category_id)"
@@ -223,6 +233,7 @@
                 size="sm"
                 variant="error"
                 icon="lucide:trash-2"
+                :disabled="c.is_default"
                 @click="onDelete(c, 'expense')"
                 >Excluir</Button
               >
@@ -256,6 +267,7 @@
                   label="Excluir"
                   icon="lucide:trash-2"
                   variant="danger"
+                  :disabled="c.is_default"
                   @click="onDelete(c, 'expense')"
                 />
               </ActionDropdown>
@@ -368,6 +380,12 @@ const openEdit = (c: Category, type: 'income' | 'expense') => {
 }
 
 const onDelete = async (c: Category, type: 'income' | 'expense') => {
+  // Bloquear exclusão de categorias padrão
+  if (c.is_default) {
+    showError('Não é possível excluir categorias padrão do sistema')
+    return
+  }
+
   if (!confirm(`Tem certeza que deseja excluir a categoria "${c.name}"?`)) return
   try {
     if (type === 'income') {
