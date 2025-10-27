@@ -43,7 +43,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const data = await $fetch<any[]>('/income-categories', {
+      const data = await $fetch<any[]>('/income-categories/available', {
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
@@ -65,7 +65,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const data = await $fetch<any>(`/income-categories/${id}`, {
+      const data = await $fetch<any>(`/income-categories/custom/${id}`, {
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
@@ -88,7 +88,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      await $fetch<any>('/income-categories', {
+      await $fetch<any>('/income-categories/custom', {
         method: 'POST',
         body: payload,
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
@@ -113,7 +113,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      await $fetch<any>(`/income-categories/${categoryId}`, {
+      await $fetch<any>(`/income-categories/custom/${categoryId}`, {
         method: 'PUT',
         body: payload,
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
@@ -136,7 +136,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      await $fetch(`/income-categories/${categoryId}`, {
+      await $fetch(`/income-categories/custom/${categoryId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
@@ -158,7 +158,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const data = await $fetch<any[]>('/expense-categories', {
+      const data = await $fetch<any[]>('/expense-categories/available', {
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         query: onlyActive ? { active: true } : undefined,
         baseURL: useRuntimeConfig().public.apiBase,
@@ -182,7 +182,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const data = await $fetch<any>(`/expense-categories/${id}`, {
+      const data = await $fetch<any>(`/expense-categories/custom/${id}`, {
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
       });
@@ -205,7 +205,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      await $fetch<any>('/expense-categories', {
+      await $fetch<any>('/expense-categories/custom', {
         method: 'POST',
         body: payload,
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
@@ -230,7 +230,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      await $fetch<any>(`/expense-categories/${categoryId}`, {
+      await $fetch<any>(`/expense-categories/custom/${categoryId}`, {
         method: 'PUT',
         body: payload,
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
@@ -252,7 +252,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      await $fetch(`/expense-categories/${categoryId}`, {
+      await $fetch(`/expense-categories/custom/${categoryId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${useAuthStore().token}` },
         baseURL: useRuntimeConfig().public.apiBase,
@@ -273,12 +273,14 @@ export const useCategoriesStore = defineStore('categories', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      await $fetch<any>(`/expense-categories/${categoryId}/toggle-active`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${useAuthStore().token}` },
-        baseURL: useRuntimeConfig().public.apiBase,
-      });
-
+      await $fetch<any>(
+        `/expense-categories/custom/${categoryId}/toggle-active`,
+        {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${useAuthStore().token}` },
+          baseURL: useRuntimeConfig().public.apiBase,
+        }
+      );
       // Fetch updated expense categories after toggle
       await fetchExpenseCategories();
       return true;
