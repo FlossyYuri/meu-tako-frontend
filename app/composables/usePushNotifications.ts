@@ -337,7 +337,6 @@ export const usePushNotifications = () => {
 
     // Verificar se está em progresso
     if (isAutoSetupInProgress.value) {
-      console.log('🔔 [PUSH AUTO] Setup automático já em progresso');
       return false;
     }
 
@@ -371,7 +370,6 @@ export const usePushNotifications = () => {
 
       // 4. Se não tem permissão, solicitar automaticamente
       if (Notification.permission === 'default') {
-        console.log('🔔 [PUSH AUTO] Solicitando permissão...');
         const permission = await Notification.requestPermission();
 
         if (permission !== 'granted') {
@@ -384,7 +382,6 @@ export const usePushNotifications = () => {
       }
 
       // 5. Registrar push notifications
-      console.log('🔔 [PUSH AUTO] Registrando push notifications...');
       const success = await registerForPushNotifications();
 
       if (success) {
@@ -438,15 +435,9 @@ export const usePushNotifications = () => {
     try {
       const hasExistingSubscription = await checkExistingSubscription();
       if (hasExistingSubscription) {
-        console.log(
-          '🔔 [PUSH AUTO] Subscription ativa encontrada - não executar setup'
-        );
         return false;
       }
 
-      console.log(
-        '🔔 [PUSH AUTO] Nenhuma subscription ativa encontrada - executar setup'
-      );
       return true;
     } catch (error) {
       console.error('🔔 [PUSH AUTO] Erro ao verificar subscription:', error);

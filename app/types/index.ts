@@ -631,14 +631,6 @@ export interface UpdateNotificationTemplateRequest {
   isActive?: boolean;
 }
 
-export interface TemplateVariable {
-  name: string;
-  type: 'string' | 'number' | 'date' | 'boolean';
-  required: boolean;
-  description?: string;
-  defaultValue?: any;
-}
-
 export interface NotificationChannelConfig {
   type: 'whatsapp' | 'email' | 'push';
   name: string;
@@ -655,7 +647,7 @@ export interface NotificationStatus {
 export interface NotificationHistory {
   id: string;
   userId: string;
-  channel: NotificationChannel['type'];
+  channel: NotificationChannel;
   status: NotificationStatus['status'];
   template: string;
   content: string;
@@ -675,7 +667,7 @@ export interface NotificationStats {
   read: number;
   failed: number;
   pending: number;
-  byChannel: Record<NotificationChannel['type'], number>;
+  byChannel: Record<NotificationChannel, number>;
   byStatus: Record<NotificationStatus['status'], number>;
   last30Days: {
     total: number;
@@ -688,7 +680,7 @@ export interface NotificationStats {
 export interface ScheduledNotification {
   id: string;
   userId: string;
-  channel: NotificationChannel['type'];
+  channel: NotificationChannel;
   template: string;
   data: Record<string, any>;
   type: 'once' | 'recurring';
@@ -705,7 +697,7 @@ export interface ScheduledNotification {
 export interface TemplatePreviewData {
   template: {
     name: string;
-    channel: NotificationChannel['type'];
+    channel: NotificationChannel;
     language: string;
   };
   processed: {
@@ -716,7 +708,7 @@ export interface TemplatePreviewData {
 }
 
 export interface SendNotificationRequest {
-  channel: NotificationChannel['type'];
+  channel: NotificationChannel;
   template: string;
   data?: Record<string, any>;
   content?: string;
@@ -725,7 +717,7 @@ export interface SendNotificationRequest {
 }
 
 export interface ScheduleNotificationRequest {
-  channel: NotificationChannel['type'];
+  channel: NotificationChannel;
   template: string;
   data?: Record<string, any>;
   type: 'once' | 'recurring';

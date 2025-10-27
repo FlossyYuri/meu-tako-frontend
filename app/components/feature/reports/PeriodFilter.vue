@@ -8,42 +8,22 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- Year Selector -->
         <div>
-          <label
-            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-          >
-            Ano
-          </label>
-          <select
+          <Select
             v-model="selectedYear"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
-            @change="onFilterChange"
-          >
-            <option v-for="year in availableYears" :key="year" :value="year">
-              {{ year }}
-            </option>
-          </select>
+            label="Ano"
+            :options="yearOptions"
+            @update:model-value="onFilterChange"
+          />
         </div>
 
         <!-- Month Selector -->
         <div>
-          <label
-            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-          >
-            Mês
-          </label>
-          <select
+          <Select
             v-model="selectedMonth"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
-            @change="onFilterChange"
-          >
-            <option
-              v-for="(month, index) in months"
-              :key="index + 1"
-              :value="index + 1"
-            >
-              {{ month }}
-            </option>
-          </select>
+            label="Mês"
+            :options="monthOptions"
+            @update:model-value="onFilterChange"
+          />
         </div>
 
         <!-- Quick Actions -->
@@ -143,11 +123,25 @@ const availableYears = computed(() => {
   return years;
 });
 
+const yearOptions = computed(() => {
+  return availableYears.value.map(year => ({
+    value: year,
+    label: year.toString()
+  }))
+})
+
 // Month names
 const months = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
 ];
+
+const monthOptions = computed(() => {
+  return months.map((month, index) => ({
+    value: index + 1,
+    label: month
+  }))
+})
 
 // Methods
 const onFilterChange = () => {
