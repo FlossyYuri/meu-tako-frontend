@@ -18,6 +18,7 @@
 <script setup>
 // Initialize auth state on app startup
 import 'vue-sonner/style.css'
+import { Toaster } from 'vue-sonner'
 const authStore = useAuthStore()
 
 // Get reactive toast theme from plugin

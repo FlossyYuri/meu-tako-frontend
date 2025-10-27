@@ -1,22 +1,14 @@
 <template>
   <div>
-    <label class="label">Carteira</label>
     <div class="flex gap-2">
-      <select
+      <Select
         v-model="selectedWalletId"
-        class="input"
-        :class="{ 'border-error-300': error }"
+        label="Carteira"
+        :options="formattedWalletOptions"
+        placeholder="Selecione uma carteira"
+        :error="error"
         :disabled="isLoading"
-      >
-        <option value="">Selecione uma carteira</option>
-        <option
-          v-for="wallet in walletOptions"
-          :key="wallet.value"
-          :value="wallet.value"
-        >
-          {{ wallet.label }} ({{ formatCurrency(wallet.balance) }})
-        </option>
-      </select>
+      />
       <Button
         type="button"
         variant="outline"
@@ -27,9 +19,6 @@
         Nova
       </Button>
     </div>
-    <p v-if="error" class="text-sm text-error-600 dark:text-error-400 mt-1">
-      {{ error }}
-    </p>
     <p
       v-if="!isLoading && walletOptions.length === 0"
       class="text-sm text-gray-500 dark:text-gray-400 mt-1"
@@ -80,6 +69,13 @@ const selectedWalletId = computed({
 
 const walletOptions = computed(() => walletsStore.walletOptions)
 const isLoading = computed(() => walletsStore.isLoading)
+
+const formattedWalletOptions = computed(() => {
+  return walletOptions.value.map(wallet => ({
+    value: wallet.value,
+    label: `${wallet.label} (${formatCurrency(wallet.balance)})`
+  }))
+})
 
 // Set default wallet when wallets are loaded
 watch(() => walletsStore.wallets, (wallets) => {

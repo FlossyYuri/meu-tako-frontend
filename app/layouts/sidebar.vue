@@ -88,17 +88,14 @@
         </div>
       </div>
 
-      <!-- Verification Banner -->
-      <VerificationBanner />
-
       <!-- Page content -->
       <main class="flex-1 p-8">
         <slot />
       </main>
-
-      <!-- Verification Modal -->
-      <VerificationModal />
     </div>
+
+    <!-- Botão flutuante de administração -->
+    <AdminFloatingButton />
   </div>
 </template>
 
@@ -106,6 +103,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
+// AdminFloatingButton será auto-importado pelo Nuxt
 
 const authStore = useAuthStore()
 const router = useRouter()

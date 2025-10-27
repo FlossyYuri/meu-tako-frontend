@@ -2,51 +2,23 @@
   <form class="space-y-6" @submit.prevent="onSubmit">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
-        <label class="label">Carteira de origem</label>
-        <select
+        <Select
           v-model="form.from_wallet_id"
-          class="input"
-          :class="{ 'border-error-300': errors.from_wallet_id }"
-        >
-          <option value="">Selecione</option>
-          <option
-            v-for="w in walletsStore.wallets"
-            :key="w.wallet_id"
-            :value="w.wallet_id"
-          >
-            {{ w.wallet_name }}
-          </option>
-        </select>
-        <p
-          v-if="errors.from_wallet_id"
-          class="text-sm text-error-600 dark:text-error-400 mt-1"
-        >
-          {{ errors.from_wallet_id }}
-        </p>
+          label="Carteira de origem"
+          :options="walletOptions"
+          placeholder="Selecione"
+          :error="errors.from_wallet_id"
+        />
       </div>
 
       <div>
-        <label class="label">Carteira de destino</label>
-        <select
+        <Select
           v-model="form.to_wallet_id"
-          class="input"
-          :class="{ 'border-error-300': errors.to_wallet_id }"
-        >
-          <option value="">Selecione</option>
-          <option
-            v-for="w in walletsStore.wallets"
-            :key="w.wallet_id"
-            :value="w.wallet_id"
-          >
-            {{ w.wallet_name }}
-          </option>
-        </select>
-        <p
-          v-if="errors.to_wallet_id"
-          class="text-sm text-error-600 dark:text-error-400 mt-1"
-        >
-          {{ errors.to_wallet_id }}
-        </p>
+          label="Carteira de destino"
+          :options="walletOptions"
+          placeholder="Selecione"
+          :error="errors.to_wallet_id"
+        />
       </div>
     </div>
 
@@ -108,6 +80,13 @@ const errors = reactive({
   from_wallet_id: '',
   to_wallet_id: '',
   amount: ''
+})
+
+const walletOptions = computed(() => {
+  return walletsStore.wallets.map(wallet => ({
+    value: wallet.wallet_id,
+    label: wallet.wallet_name
+  }))
 })
 
 const isValid = computed(() => {

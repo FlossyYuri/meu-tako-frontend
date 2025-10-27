@@ -24,7 +24,7 @@ export const useThemeStore = defineStore('theme', () => {
   };
 
   const updateTheme = () => {
-    if (process.client) {
+    if (import.meta.client) {
       const html = document.documentElement;
 
       if (mode.value === 'dark') {
@@ -50,7 +50,7 @@ export const useThemeStore = defineStore('theme', () => {
   };
 
   const saveToLocalStorage = () => {
-    if (process.client) {
+    if (import.meta.client) {
       try {
         localStorage.setItem('meu-tako-theme', mode.value);
       } catch (error) {
@@ -60,7 +60,7 @@ export const useThemeStore = defineStore('theme', () => {
   };
 
   const loadFromLocalStorage = () => {
-    if (process.client) {
+    if (import.meta.client) {
       try {
         const savedTheme = localStorage.getItem('meu-tako-theme') as ThemeMode;
         if (savedTheme && ['light', 'dark', 'auto'].includes(savedTheme)) {
@@ -80,7 +80,7 @@ export const useThemeStore = defineStore('theme', () => {
     loadFromLocalStorage();
 
     // Listener para mudanças na preferência do sistema (modo auto)
-    if (process.client) {
+    if (import.meta.client) {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       const handleSystemThemeChange = () => {
         if (mode.value === 'auto') {
@@ -103,8 +103,8 @@ export const useThemeStore = defineStore('theme', () => {
 
   return {
     // State
-    mode: readonly(mode),
-    isDark: readonly(isDark),
+    mode: mode,
+    isDark: isDark,
 
     // Getters
     currentMode,

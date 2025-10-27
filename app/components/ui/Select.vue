@@ -26,6 +26,9 @@
         @blur="handleBlur"
         @focus="handleFocus"
       >
+        <option v-if="placeholder" value="" disabled>
+          {{ placeholder }}
+        </option>
         <option
           v-for="option in options"
           :key="option.value"
@@ -77,7 +80,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string | number]
+  'update:modelValue': [value: string | number | undefined]
   blur: [event: FocusEvent]
   focus: [event: FocusEvent]
 }>()
@@ -110,7 +113,8 @@ const selectClasses = computed(() => {
 const handleChange = (event: Event) => {
   const target = event.target as HTMLSelectElement
   const value = target.value
-  emit('update:modelValue', value)
+  // Convert empty string to undefined for better handling
+  emit('update:modelValue', value === '' ? undefined : value)
 }
 
 const handleBlur = (event: FocusEvent) => {

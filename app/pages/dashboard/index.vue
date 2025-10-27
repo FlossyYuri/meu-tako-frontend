@@ -183,7 +183,6 @@ const {
   hasRecentTransactions,
   fetchDashboardData,
   refreshDashboard,
-  clearError
 } = useDashboard();
 
 // Lifecycle
@@ -193,27 +192,5 @@ onMounted(async () => {
   } catch (err) {
     console.error('Erro ao carregar dashboard:', err);
   }
-});
-
-// Auto-refresh every 5 minutes
-let refreshInterval: NodeJS.Timeout | null = null;
-
-onMounted(() => {
-  refreshInterval = setInterval(() => {
-    if (!isLoading.value) {
-      refreshDashboard();
-    }
-  }, 5 * 60 * 1000); // 5 minutes
-});
-
-onUnmounted(() => {
-  if (refreshInterval) {
-    clearInterval(refreshInterval);
-  }
-});
-
-// Clear error when component is mounted
-onMounted(() => {
-  clearError();
 });
 </script>

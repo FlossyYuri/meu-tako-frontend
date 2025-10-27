@@ -45,14 +45,18 @@
             class="w-3.5 h-3.5 text-gray-600 dark:text-gray-300"
           />
         </div>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-            {{ authStore.user?.name || 'Usuário' }}
-          </p>
-          <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-            {{ authStore.user?.email || 'email@exemplo.com' }}
-          </p>
-        </div>
+        <ClientOnly>
+          <div class="flex-1 min-w-0">
+            <p
+              class="text-sm font-medium text-gray-900 dark:text-white truncate"
+            >
+              {{ authStore.user?.name || 'Usuário' }}
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+              {{ authStore.user?.email || 'email@exemplo.com' }}
+            </p>
+          </div>
+        </ClientOnly>
         <button
           class="p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
           title="Sair"

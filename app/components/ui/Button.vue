@@ -16,6 +16,11 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+
+// Auto-imports from Nuxt
+declare const navigateTo: (to: any) => Promise<void>;
+
 interface RouteLocationLike {
   path?: string
   name?: string
@@ -90,7 +95,14 @@ const handleClick = async (event: MouseEvent) => {
 
   // Navegação interna (rota)
   if (props.to) {
-    await navigateTo(props.to as any)
+    try {
+      await navigateTo(props.to as any)
+    } catch (error) {
+      // Ignorar erros de navegação durante unmount
+      if (typeof window !== 'undefined') {
+        console.warn('Navigation error:', error)
+      }
+    }
     return
   }
 
