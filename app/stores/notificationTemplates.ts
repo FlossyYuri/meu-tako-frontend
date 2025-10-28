@@ -372,16 +372,12 @@ export const useNotificationTemplatesStore = defineStore(
     };
 
     // Notificações
-    const sendTestNotification = async (
-      templateId: string,
-      data: SendNotificationRequest
-    ) => {
+    const sendTestNotification = async (data: SendNotificationRequest) => {
       try {
         await $fetch('/notifications/send', {
           method: 'POST',
           body: {
             ...data,
-            template: templateId,
           },
           headers: { Authorization: `Bearer ${useAuthStore().token}` },
           baseURL: useRuntimeConfig().public.apiBase,

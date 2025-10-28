@@ -22,12 +22,21 @@
         @test="handleTest"
         @delete="handleDelete"
       />
+
+      <!-- Modal de teste -->
+      <TestNotificationModal
+        v-if="selectedTemplate"
+        :template="selectedTemplate"
+        :open="showTestModal"
+        @update:open="showTestModal = $event"
+        @test-sent="handleTestSent"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from 'vue';
+import { onMounted, computed, ref } from 'vue';
 import { useNotificationTemplatesStore } from '../../../stores/notificationTemplates';
 import type { NotificationTemplate } from '../../../types';
 
@@ -38,6 +47,10 @@ const store = useNotificationTemplatesStore();
 const templates = computed(() => store.templates);
 const loading = computed(() => store.isLoading);
 const error = computed(() => store.error);
+
+// Estado do modal de teste
+const selectedTemplate = ref<NotificationTemplate | null>(null);
+const showTestModal = ref(false);
 
 // Carregar templates
 onMounted(async () => {
@@ -72,8 +85,13 @@ const handleDuplicate = async (template: NotificationTemplate) => {
 };
 
 const handleTest = (template: NotificationTemplate) => {
-  // Navegar para página de teste
-  navigateTo(`/admin/notification-templates/${template.id}/test`);
+  selectedTemplate.value = template;
+  showTestModal.value = true;
+};
+
+const handleTestSent = () => {
+  showTestModal.value = false;
+  selectedTemplate.value = null;
 };
 
 const handleDelete = async (template: NotificationTemplate) => {

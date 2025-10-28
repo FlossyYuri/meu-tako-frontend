@@ -46,7 +46,7 @@
             </div>
 
             <!-- Body -->
-            <div class="p-6">
+            <div class="p-6 overflow-y-auto flex-1">
               <slot />
             </div>
 
@@ -65,6 +65,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted, onUnmounted, watch } from 'vue';
+
 interface Props {
   isOpen: boolean
   title?: string
@@ -87,7 +89,7 @@ const emit = defineEmits<{
 }>()
 
 const modalClasses = computed(() => {
-  const baseClasses = 'relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-h-[90vh] overflow-hidden'
+  const baseClasses = 'relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-h-[90vh] flex flex-col overflow-hidden'
 
   const sizeClasses = {
     sm: 'max-w-sm w-full',
@@ -128,7 +130,7 @@ onMounted(() => {
 
 // Prevent body scroll when modal is open
 watch(() => props.isOpen, (isOpen) => {
-  if (import.meta.client) {
+  if (typeof window !== 'undefined') {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
     } else {

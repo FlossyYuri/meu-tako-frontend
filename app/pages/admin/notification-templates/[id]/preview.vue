@@ -285,7 +285,7 @@ const sendTestNotification = async () => {
       testData[variable] = variable.toUpperCase();
     });
 
-    await store.sendTestNotification(template.value.id, {
+    await store.sendTestNotification({
       channel: template.value.channel,
       template: template.value.name,
       data: testData

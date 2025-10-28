@@ -1,5 +1,5 @@
 <template>
-  <Modal v-model:isOpen="isOpen" title="Enviar Notificação de Teste" size="lg">
+  <Modal v-model:is-open="isOpen" title="Enviar Notificação de Teste" size="lg">
     <div class="space-y-6">
       <!-- Informações do template -->
       <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
@@ -45,8 +45,8 @@
             </label>
             <Input
               v-model="testData[variable]"
-              :placeholder="getPlaceholder(variable)"
-              :type="getInputType(variable)"
+              :placeholder="variable.toUpperCase()"
+              type="text"
             />
           </div>
         </div>
@@ -120,14 +120,14 @@
         </div>
 
         <div class="flex items-center space-x-3">
-          <Button variant="outline" @click="closeModal" :disabled="loading">
+          <Button variant="outline" :disabled="loading" @click="closeModal">
             Cancelar
           </Button>
 
           <Button
-            @click="sendTest"
             :disabled="!canSend || loading"
             :loading="loading"
+            @click="sendTest"
           >
             <Icon name="lucide:send" class="w-4 h-4 mr-2" />
             Enviar Teste
@@ -139,7 +139,11 @@
 </template>
 
 <script setup lang="ts">
-import type { NotificationTemplate, SendNotificationRequest } from '~/types';
+import { ref, computed, onMounted, watch } from 'vue';
+import type { NotificationTemplate, SendNotificationRequest } from '../../../types';
+import { generateExampleData } from '../../../utils/handlebarsProcessor';
+import { useNotificationTemplatesStore } from '../../../stores/notificationTemplates';
+import { useNotifications } from '../../../composables/useNotifications';
 
 interface Props {
   template: NotificationTemplate;
@@ -150,16 +154,16 @@ const props = defineProps<Props>();
 
 const emit = defineEmits<{
   'update:open': [open: boolean];
-  'test-sent': [data: any];
+  'test-sent': [data: unknown];
 }>();
 
-// Composables
-const { sendTestNotification } = useNotificationTemplates();
+// Store - Novo sistema de state management
+const store = useNotificationTemplatesStore();
 const { success, error } = useNotifications();
 
 // Estado
 const loading = ref(false);
-const testData = ref<Record<string, any>>({});
+const testData = ref<Record<string, string>>({});
 const recipient = ref('');
 
 // Computed
@@ -201,33 +205,27 @@ const canSend = computed(() => {
 
 // Métodos
 const initializeTestData = () => {
-  const exampleData = generateExampleData(props.template.variables);
-  testData.value = { ...exampleData };
+  // Gerar dados baseados no canal do template
+  const channelData = generateExampleData(props.template.channel);
+
+  // Criar dados específicos para as variáveis do template
+  const exampleData: Record<string, string> = {};
+
+  props.template.variables.forEach(variable => {
+    // Tentar encontrar o valor correspondente nos dados do canal
+    if (channelData[variable]) {
+      exampleData[variable] = String(channelData[variable]);
+    } else if (channelData.user && (channelData.user as Record<string, unknown>)[variable]) {
+      exampleData[variable] = String((channelData.user as Record<string, unknown>)[variable]);
+    } else {
+      // Fallback: usar o nome da variável em maiúsculas
+      exampleData[variable] = variable.toUpperCase();
+    }
+  });
+
+  testData.value = exampleData;
 };
 
-const getPlaceholder = (variable: string) => {
-  const placeholders: Record<string, string> = {
-    userName: 'João Silva',
-    userEmail: 'joao@exemplo.com',
-    amount: '150.50',
-    date: '15/01/2024',
-    billName: 'Conta de Luz',
-    dueDate: '15/01/2024',
-    goalName: 'Viagem para Europa',
-    currentAmount: '2500.00',
-    targetAmount: '5000.00',
-    percentage: '50'
-  };
-
-  return placeholders[variable] || `Valor para ${variable}`;
-};
-
-const getInputType = (variable: string) => {
-  if (variable.toLowerCase().includes('email')) return 'email';
-  if (variable.toLowerCase().includes('amount') || variable.toLowerCase().includes('valor')) return 'number';
-  if (variable.toLowerCase().includes('date') || variable.toLowerCase().includes('data')) return 'date';
-  return 'text';
-};
 
 const getRecipientPlaceholder = () => {
   switch (props.template.channel) {
@@ -255,7 +253,8 @@ const sendTest = async () => {
       recipient: recipient.value || undefined
     };
 
-    const result = await sendTestNotification(props.template.id, requestData);
+    // Usar o método do store
+    const result = await store.sendTestNotification(requestData);
 
     success('Sucesso', 'Notificação de teste enviada com sucesso!');
     emit('test-sent', result);

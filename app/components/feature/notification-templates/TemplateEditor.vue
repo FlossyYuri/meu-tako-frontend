@@ -131,8 +131,9 @@
 </template>
 
 <script setup lang="ts">
-import type { NotificationChannel } from '~/types';
-import { validateTemplate } from '~/utils/handlebarsProcessor';
+import { ref, computed, watch, onMounted } from 'vue';
+import type { NotificationChannel } from '../../../types';
+import { validateTemplate } from '../../../utils/handlebarsProcessor';
 
 interface Props {
   modelValue: string;
@@ -172,6 +173,13 @@ const maxLength = computed(() => {
 
 // Validar conteúdo
 const validateContent = () => {
+  // Só validar se há conteúdo
+  if (!content.value || content.value.trim().length === 0) {
+    validationResult.value = { isValid: true, errors: [], warnings: [], variables: [] };
+    emit('validation-change', validationResult.value);
+    return;
+  }
+
   const result = validateTemplate(content.value, props.channel, {
     maxLength: maxLength.value,
     strictMode: false

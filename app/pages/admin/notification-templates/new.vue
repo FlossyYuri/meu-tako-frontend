@@ -100,7 +100,7 @@
             <Card v-if="form.channel">
               <div class="p-6">
                 <VariableManager
-                  v-model="form.variables"
+                  v-model="variables"
                   :template-content="form.content"
                   @insert-variable="insertVariable"
                 />
@@ -117,7 +117,7 @@
                   :content="form.content"
                   :channel="form.channel"
                   :subject="form.title"
-                  :variables="form.variables"
+                  :variables="form.variables || []"
                 />
               </div>
             </Card>
@@ -216,8 +216,8 @@
 
     <!-- Modal de teste -->
     <TestNotificationModal
-      v-if="showTestModal"
-      :template="templateForTest"
+      v-if="showTestModal && savedTemplate"
+      :template="savedTemplate"
       :open="showTestModal"
       @update:open="showTestModal = false"
       @test-sent="handleTestSent"
@@ -226,8 +226,9 @@
 </template>
 
 <script setup lang="ts">
-import { useNotificationTemplatesStore } from '~/stores/notificationTemplates';
-import type { CreateNotificationTemplateRequest, NotificationTemplate } from '~/types';
+import { ref, computed, onMounted } from 'vue';
+import { useNotificationTemplatesStore } from '../../../stores/notificationTemplates';
+import type { CreateNotificationTemplateRequest, NotificationTemplate } from '../../../types';
 
 // Store
 const store = useNotificationTemplatesStore();
@@ -247,6 +248,7 @@ const form = ref<CreateNotificationTemplateRequest>({
 const validationResult = ref<any>(null);
 const showTestModal = ref(false);
 const templateForTest = ref<NotificationTemplate | null>(null);
+const savedTemplate = ref<NotificationTemplate | null>(null);
 
 // Computed
 const loading = computed(() => store.isLoading);
@@ -259,10 +261,19 @@ const canSave = computed(() => {
          (!validationResult.value || validationResult.value.isValid);
 });
 
+const variables = computed({
+  get: () => form.value.variables || [],
+  set: (value: string[]) => {
+    form.value.variables = value;
+  }
+});
+
 const canTest = computed(() => {
-  return form.value.channel &&
+  // Só pode testar se o template foi salvo (tem ID) e tem conteúdo válido
+  return savedTemplate.value?.id &&
+         form.value.channel &&
          form.value.content.trim() &&
-         (form.value.variables?.length || 0) > 0;
+         variables.value.length > 0;
 });
 
 // Opções para os selects
@@ -289,22 +300,10 @@ const insertVariable = (variable: string) => {
 };
 
 const testTemplate = () => {
-  if (!canTest.value) return;
+  if (!canTest.value || !savedTemplate.value) return;
 
-  // Criar template temporário para teste
-  templateForTest.value = {
-    id: 'temp',
-    name: form.value.name,
-    title: form.value.title || '',
-    content: form.value.content,
-    channel: form.value.channel,
-    language: form.value.language,
-    variables: form.value.variables || [],
-    isActive: form.value.isActive || false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  } as NotificationTemplate;
-
+  // Usar o template salvo para teste
+  templateForTest.value = savedTemplate.value;
   showTestModal.value = true;
 };
 
@@ -316,8 +315,9 @@ const saveTemplate = async () => {
   if (!canSave.value) return;
 
   try {
-    await store.createTemplate(form.value);
-    await navigateTo('/admin/notification-templates');
+    const createdTemplate = await store.createTemplate(form.value);
+    savedTemplate.value = createdTemplate;
+    // Não navegar imediatamente, permitir teste
   } catch (err) {
     console.error('Erro ao salvar template:', err);
   }

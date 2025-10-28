@@ -253,8 +253,8 @@
 
       <!-- Modal de teste -->
       <TestNotificationModal
-        v-if="showTestModal && templateForModal"
-        :template="templateForModal"
+        v-if="showTestModal && template"
+        :template="template"
         :open="showTestModal"
         @update:open="showTestModal = false"
         @test-sent="handleTestSent"
@@ -264,8 +264,9 @@
 </template>
 
 <script setup lang="ts">
-import { useNotificationTemplatesStore } from '~/stores/notificationTemplates';
-import type { UpdateNotificationTemplateRequest } from '~/types';
+import { ref, computed, onMounted } from 'vue';
+import { useNotificationTemplatesStore } from '../../../stores/notificationTemplates';
+import type { UpdateNotificationTemplateRequest, NotificationTemplate } from '../../../types';
 
 // Route params
 const route = useRoute();
@@ -322,7 +323,9 @@ const canSave = computed(() => {
 });
 
 const canTest = computed(() => {
-  return form.value?.content?.trim() &&
+  // Só pode testar se o template foi salvo (tem ID) e tem conteúdo válido
+  return template.value?.id &&
+         form.value?.content?.trim() &&
          form.value?.variables?.length > 0;
 });
 
