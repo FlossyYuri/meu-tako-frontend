@@ -92,18 +92,46 @@
           </p>
         </div>
 
-        <div class="flex items-center">
-          <input
-            id="paid"
-            v-model="form.paid"
-            type="checkbox"
-            class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-          />
-          <label
-            for="paid"
-            class="ml-2 text-sm text-gray-900 dark:text-gray-300"
-            >Já pago</label
+        <!-- Status de pagamento -->
+        <div class="p-4 rounded-lg border-2 transition-colors duration-200"
+          :class="form.paid 
+            ? 'border-success-300 bg-success-50 dark:bg-success-900/20 dark:border-success-700' 
+            : 'border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700'"
+        >
+          <button
+            type="button"
+            @click="form.paid = !form.paid"
+            class="flex items-center justify-between w-full"
           >
+            <div class="flex items-center gap-3">
+              <div class="flex items-center justify-center w-6 h-6 rounded-full border-2 transition-colors duration-200"
+                :class="form.paid 
+                  ? 'bg-success-600 border-success-600' 
+                  : 'bg-white border-gray-300 dark:bg-gray-700 dark:border-gray-500'"
+              >
+                <Icon 
+                  v-if="form.paid"
+                  name="lucide:check" 
+                  class="w-4 h-4 text-white" 
+                />
+              </div>
+              <div class="text-left">
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                  Já pago
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  Marque se esta despesa já foi paga
+                </p>
+              </div>
+            </div>
+            <Icon 
+              :name="form.paid ? 'lucide:check-circle' : 'lucide:circle'" 
+              class="w-5 h-5 transition-colors duration-200"
+              :class="form.paid 
+                ? 'text-success-600 dark:text-success-400' 
+                : 'text-gray-400 dark:text-gray-500'"
+            />
+          </button>
         </div>
 
         <div class="flex space-x-3">
@@ -156,7 +184,7 @@ const form = reactive({
   description: '',
   date: new Date().toISOString().split('T')[0],
   expense_category_id: '',
-  paid: false,
+  paid: true,
   wallet_id: ''
 })
 
