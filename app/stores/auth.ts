@@ -166,6 +166,34 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
+  const fetchUserProfile = async () => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+
+      const response = await $fetch<User>('/users/profile', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        baseURL: useRuntimeConfig().public.apiBase,
+      });
+
+      user.value = response;
+
+      if (import.meta.client) {
+        localStorage.setItem('auth_user', JSON.stringify(response));
+      }
+
+      return response;
+    } catch (err: any) {
+      error.value = err.data?.message || 'Erro ao buscar perfil';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
   const updateProfile = async (profileData: Partial<User>) => {
     try {
       isLoading.value = true;
@@ -317,13 +345,8 @@ export const useAuthStore = defineStore('auth', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      // Update user verification status
-      if (user.value) {
-        user.value.email_verified = true;
-        if (import.meta.client) {
-          localStorage.setItem('auth_user', JSON.stringify(user.value));
-        }
-      }
+      // Fetch updated user data from server
+      await fetchUserProfile();
 
       return true;
     } catch (err: any) {
@@ -371,13 +394,8 @@ export const useAuthStore = defineStore('auth', () => {
         baseURL: useRuntimeConfig().public.apiBase,
       });
 
-      // Update user verification status
-      if (user.value) {
-        user.value.whatsapp_verified = true;
-        if (import.meta.client) {
-          localStorage.setItem('auth_user', JSON.stringify(user.value));
-        }
-      }
+      // Fetch updated user data from server
+      await fetchUserProfile();
 
       return true;
     } catch (err: any) {
@@ -411,6 +429,7 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     refreshAuthToken,
     initializeAuth,
+    fetchUserProfile,
     updateProfile,
     changePassword,
     deleteAccount,

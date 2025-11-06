@@ -88,6 +88,12 @@
         </div>
       </div>
 
+      <!-- Verification Banners -->
+      <div class="px-4 pt-4 lg:px-8 lg:pt-8">
+        <EmailVerificationBanner />
+        <WhatsAppVerificationBanner />
+      </div>
+
       <!-- Page content -->
       <main class="flex-1 p-8">
         <slot />
