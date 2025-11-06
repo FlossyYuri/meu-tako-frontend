@@ -18,7 +18,7 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="flex-1 px-3 py-3 space-y-0.5">
+    <nav class="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
       <NuxtLink
         v-for="item in navigationItems"
         :key="item.name"
@@ -32,6 +32,42 @@
         <Icon :name="item.icon" class="w-4 h-4" />
         <span>{{ item.name }}</span>
       </NuxtLink>
+
+      <!-- Mais opções (Collapsible) -->
+      <div class="mt-2">
+        <button
+          @click="showMoreOptions = !showMoreOptions"
+          class="flex items-center justify-between w-full gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+        >
+          <div class="flex items-center gap-2.5">
+            <Icon name="lucide:more-horizontal" class="w-4 h-4" />
+            <span>Mais opções</span>
+          </div>
+          <Icon
+            :name="showMoreOptions ? 'lucide:chevron-up' : 'lucide:chevron-down'"
+            class="w-4 h-4 transition-transform duration-200"
+          />
+        </button>
+
+        <div
+          v-show="showMoreOptions"
+          class="mt-0.5 space-y-0.5 pl-4 border-l-2 border-gray-200 dark:border-gray-700 ml-2.5"
+        >
+          <NuxtLink
+            v-for="item in moreOptionsItems"
+            :key="item.name"
+            :to="item.href"
+            class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+            :class="isActive(item.href)
+              ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700'"
+            @click="isMobile && $emit('close')"
+          >
+            <Icon :name="item.icon" class="w-4 h-4" />
+            <span>{{ item.name }}</span>
+          </NuxtLink>
+        </div>
+      </div>
     </nav>
 
     <!-- User section -->
@@ -91,18 +127,22 @@ const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
 
+const showMoreOptions = ref(false)
+
 const navigationItems: NavItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: 'lucide:layout-dashboard' },
-  { name: 'Transações', href: '/transactions', icon: 'lucide:credit-card' },
-  { name: 'Listas de Compras', href: '/shopping-lists', icon: 'lucide:shopping-cart' },
-  { name: 'Receitas', href: '/incomes', icon: 'lucide:trending-up' },
   { name: 'Despesas', href: '/expenses', icon: 'lucide:trending-down' },
+  { name: 'Receitas', href: '/incomes', icon: 'lucide:trending-up' },
+  { name: 'Metas', href: '/goals', icon: 'lucide:target' },
   { name: 'Carteiras', href: '/wallets', icon: 'lucide:wallet' },
   { name: 'Categorias', href: '/categories', icon: 'lucide:tags' },
-  { name: 'Metas', href: '/goals', icon: 'lucide:target' },
   { name: 'Lembretes', href: '/reminders', icon: 'lucide:bell' },
+  { name: 'Relatórios', href: '/reports', icon: 'lucide:bar-chart-3' }
+]
+
+const moreOptionsItems: NavItem[] = [
+  { name: 'Transações', href: '/transactions', icon: 'lucide:credit-card' },
   { name: 'Limites', href: '/limits', icon: 'lucide:shield' },
-  { name: 'Relatórios', href: '/reports', icon: 'lucide:bar-chart-3' },
   { name: 'Configurações', href: '/settings', icon: 'lucide:settings' }
 ]
 
