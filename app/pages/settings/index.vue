@@ -339,74 +339,6 @@
             </div>
           </div>
         </Card>
-
-        <!-- Account Tab -->
-        <Card v-if="activeTab === 'account'">
-          <template #header>
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-              Conta
-            </h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-              Gerencie sua conta e dados
-            </p>
-          </template>
-
-          <div class="space-y-4 sm:space-y-6">
-            <!-- Export Data -->
-            <div
-              class="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
-            >
-              <div
-                class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-              >
-                <div class="flex-1 min-w-0">
-                  <h3 class="font-medium text-gray-900 dark:text-white">
-                    Exportar dados
-                  </h3>
-                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    Baixe uma cópia dos seus dados
-                  </p>
-                </div>
-                <div class="flex-shrink-0">
-                  <Button
-                    variant="outline"
-                    class="w-full sm:w-auto"
-                    @click="exportData"
-                  >
-                    Exportar
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Delete Account -->
-            <div
-              class="border border-error-200 dark:border-error-800 rounded-lg p-4 bg-error-50 dark:bg-error-900"
-            >
-              <div
-                class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-              >
-                <div class="flex-1 min-w-0">
-                  <h3 class="font-medium text-error-900 dark:text-error-100">
-                    Excluir conta
-                  </h3>
-                  <p class="text-sm text-error-700 dark:text-error-300 mt-1">
-                    Esta ação não pode ser desfeita
-                  </p>
-                </div>
-                <div class="flex-shrink-0">
-                  <Button
-                    variant="error"
-                    class="w-full sm:w-auto"
-                    @click="confirmDeleteAccount"
-                  >
-                    Excluir
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
       </div>
     </div>
   </div>
@@ -431,8 +363,7 @@ const activeTab = ref('profile')
 const tabs = [
   { id: 'profile', name: 'Perfil', icon: 'lucide:user' },
   { id: 'security', name: 'Segurança', icon: 'lucide:shield' },
-  { id: 'preferences', name: 'Preferências', icon: 'lucide:settings' },
-  { id: 'account', name: 'Conta', icon: 'lucide:user-x' }
+  { id: 'preferences', name: 'Preferências', icon: 'lucide:settings' }
 ]
 
 // Profile form
@@ -519,39 +450,6 @@ const changePassword = async () => {
   }
 }
 
-const exportData = () => {
-  // Mock export functionality
-  const data = {
-    user: authStore.user,
-    exportDate: new Date().toISOString()
-  }
-
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `meu-tako-data-${new Date().toISOString().split('T')[0]}.json`
-  link.click()
-  URL.revokeObjectURL(url)
-
-  success('Dados exportados com sucesso!')
-}
-
-const confirmDeleteAccount = () => {
-  if (confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.')) {
-    deleteAccount()
-  }
-}
-
-const deleteAccount = async () => {
-  try {
-    await authStore.deleteAccount()
-    success('Conta excluída com sucesso')
-    await navigateTo('/auth/login')
-  } catch (error) {
-    showError('Erro ao excluir conta')
-  }
-}
 
 // Initialize form with user data
 onMounted(() => {
