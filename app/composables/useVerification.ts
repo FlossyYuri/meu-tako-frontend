@@ -28,10 +28,10 @@ export const useVerification = () => {
   // Computed
   const user = computed(() => authStore.user);
   const needsEmailVerification = computed(
-    () => user.value && !user.value.email_verified
+    () => !!(user.value && !user.value.email_verified)
   );
   const needsWhatsAppVerification = computed(
-    () => user.value && user.value.whatsapp && !user.value.whatsapp_verified
+    () => !!(user.value && user.value.whatsapp && !user.value.whatsapp_verified)
   );
   const needsAnyVerification = computed(
     () => needsEmailVerification.value || needsWhatsAppVerification.value
